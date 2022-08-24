@@ -1,6 +1,8 @@
+import { Link } from "@remix-run/react";
 import Logo from "./logo";
 
-export default function Navbar() {
+export default function Navbar(props: { isMobileView: boolean }) {
+  const { isMobileView } = props;
   return (
     <header className="bg-white border-b-2 border-gray-100">
       <div className="max-w-7xl mx-auto px-2 sm:px-4">
@@ -11,12 +13,14 @@ export default function Navbar() {
             </div>
           </div>
           <div className="relative z-10 flex items-center">
-            <a
-              href="#"
+            <Link
+              to={`https://s80o7xdqcu7.typeform.com/to/lUEhS3bd?utm_source=app.withrival.com&utm_medium=${
+                isMobileView ? "mobile" : "web"
+              }`}
               className="uppercase font-bold inline-flex items-center px-9 py-3.5 border border-transparent text-sm rounded text-black bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
             >
               Request Access
-            </a>
+            </Link>
           </div>
         </div>
       </div>
