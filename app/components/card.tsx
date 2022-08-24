@@ -5,7 +5,7 @@ export default function Card(props: any) {
   return (
     <>
       {imageOnly ? (
-        <div className="aspect-w-3 aspect-h-4 group-hover:opacity-75 sm:aspect-none sm:h-96">
+        <div className="group-hover:opacity-75 sm:aspect-none sm:h-80">
           <img
             src={src}
             alt="Blastoise"
@@ -14,7 +14,7 @@ export default function Card(props: any) {
         </div>
       ) : (
         <div className="group relative bg-white border-2 border-neutral-250 rounded-lg flex flex-col overflow-hidden p-6 divide-y-2 space-y-4 divide-neutral-150">
-          <div className="aspect-w-3 aspect-h-4 group-hover:opacity-75 sm:aspect-none sm:h-96">
+          <div className="group-hover:opacity-75 sm:aspect-none sm:h-80">
             <img
               src={src}
               alt="Blastoise"
@@ -22,8 +22,8 @@ export default function Card(props: any) {
             />
           </div>
           <div className="flex-1 flex flex-col pt-4">
-            <div className="flex justify-between text-base font-semibold">
-              <h3 className="">Blastoise</h3>
+            <div className="flex justify-between flex-row sm:flex-col md:flex-row font-semibold">
+              <h3 className="text-base">Blastoise</h3>
               <span className="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-800">
                 PSA 9.0
               </span>
