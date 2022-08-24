@@ -3,8 +3,6 @@ import { useLoaderData } from "@remix-run/react";
 import Gallery from "~/components/gallery";
 import Navbar from "~/components/navbar";
 import Profile from "~/components/profile";
-import Sidebar from "~/components/sidebar";
-import Tabs from "~/components/tabs";
 
 export const loader: LoaderFunction = async ({ request }) => {
   let isMobileView = (
