@@ -13,7 +13,7 @@ export default function Navbar() {
           <div className="relative z-10 flex items-center">
             <a
               href="#"
-              className="uppercase font-bold inline-flex items-center px-9 py-3.5 border border-transparent text-sm font-medium rounded text-black bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
+              className="uppercase font-bold inline-flex items-center px-9 py-3.5 border border-transparent text-sm rounded text-black bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
             >
               Request Access
             </a>
