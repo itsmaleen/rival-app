@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  name         String?
+  collectibles Collectible[]
+  createdAt    DateTime      @default(now())
+
+  @@map("users")
+}
+
+model Collectible {
+  id          Int     @id @default(autoincrement())
+  name        String
+  imageUrl    String
+  grade       String?
+  description String?
+
+  owner   User @relation(fields: [ownerId], references: [id])
+  ownerId Int
+
+  tags   Tag[]
+  images Image[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  @@map("collectibles")
+}
+
+model Tag {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  collectible   Collectible @relation(fields: [collectibleId], references: [id])
+  collectibleId Int
+
+  @@map("tags")
+}
+
+model Image {
+  id       Int    @id @default(autoincrement())
+  url      String
+  priority Int
+
+  collectible   Collectible @relation(fields: [collectibleId], references: [id])
+  collectibleId Int
+  createdAt     DateTime    @default(now())
+
+  @@unique([collectibleId, priority])
+  @@map("images")
+}
