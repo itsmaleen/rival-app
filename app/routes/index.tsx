@@ -1,22 +1,9 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import Gallery from "~/components/gallery";
-import Navbar from "~/components/navbar";
 import Profile from "~/components/profile";
 
-export const loader: LoaderFunction = async ({ request }) => {
-  let isMobileView = (
-    request ? request.headers.get("user-agent") : navigator.userAgent
-  ).match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i);
-
-  //Returning the isMobileView as a prop to the component for further use.
-  return {
-    isMobileView: Boolean(isMobileView),
-  };
-};
-
 export default function Index() {
-  const { isMobileView } = useLoaderData();
   const tabs = [
     { name: "Featured", href: "#", count: "52", current: false },
     { name: "Collection", href: "#", count: "6", current: true },
@@ -60,8 +47,7 @@ export default function Index() {
     },
   ];
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }}>
-      <Navbar isMobileView={isMobileView} />
+    <>
       <Profile />
       <Gallery
         filters={filters}
@@ -72,6 +58,6 @@ export default function Index() {
         <Sidebar />
         <Gallery />
       </div> */}
-    </div>
+    </>
   );
 }

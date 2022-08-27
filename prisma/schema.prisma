@@ -14,8 +14,11 @@ model User {
   id           Int           @id @default(autoincrement())
   email        String        @unique
   name         String?
+  username     String        @unique
+  description  String?
   collectibles Collectible[]
   createdAt    DateTime      @default(now())
+  links        UserLink[]
 
   @@map("users")
 }
@@ -26,6 +29,10 @@ model Collectible {
   imageUrl    String
   grade       String?
   description String?
+  condition   String?
+  quantity    Int     @default(1)
+  wishlist    Boolean @default(false)
+  featured    Boolean @default(false)
 
   owner   User @relation(fields: [ownerId], references: [id])
   ownerId Int
@@ -40,8 +47,10 @@ model Collectible {
 }
 
 model Tag {
-  id   Int    @id @default(autoincrement())
-  name String
+  id         Int      @id @default(autoincrement())
+  name       String
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
 
   collectible   Collectible @relation(fields: [collectibleId], references: [id])
   collectibleId Int
@@ -60,4 +69,23 @@ model Image {
 
   @@unique([collectibleId, priority])
   @@map("images")
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  Tag Tag[]
+
+  @@map("categories")
+}
+
+model UserLink {
+  id     Int    @id @default(autoincrement())
+  url    String
+  name   String
+  user   User   @relation(fields: [userId], references: [id])
+  userId Int
+
+  @@map("user_links")
 }
