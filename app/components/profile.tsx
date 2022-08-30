@@ -1,12 +1,14 @@
 import FacebookIcon from "./icons/fb";
 import InstagramIcon from "./icons/instagram";
 import TwitchIcon from "./icons/twitch";
+import TwitterIcon from "./icons/twitter";
 
 export default function Profile(props: {
   name: string | null;
   username: string;
+  description: string | null;
 }) {
-  const { name, username } = props;
+  const { name, username, description } = props;
   const social = [
     {
       name: "Facebook",
@@ -26,11 +28,7 @@ export default function Profile(props: {
     {
       name: "Twitter",
       href: "#",
-      icon: (props: { className?: string }) => (
-        <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
-          <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-        </svg>
-      ),
+      icon: TwitterIcon,
     },
   ];
   return (
@@ -60,11 +58,7 @@ export default function Profile(props: {
         <p className="mt-3 text-2xl tracking-tight font-bold text-gray-900 sm:text-3xl sm:tracking-tight lg:tracking-tight">
           {name || username}
         </p>
-        <p className="max-w-xl mt-5 mx-auto">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-          dignissim dui sed tellus venenatis, vel consequat sapien vehicula.
-          Quisque iaculis non dolor nec mollis. Nullam a tempor magna.
-        </p>
+        {description && <p className="max-w-xl mt-5 mx-auto">{description}</p>}
       </div>
     </div>
   );

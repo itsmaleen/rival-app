@@ -76,7 +76,7 @@ export async function loader({ params }: LoaderArgs) {
 export default function ProfilePage() {
   const data = useLoaderData<typeof loader>();
 
-  const { filters, username } = data;
+  const { filters, username, user } = data;
   console.log(filters);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [webFiltersOpen, setWebFiltersOpen] = useState(
@@ -100,7 +100,11 @@ export default function ProfilePage() {
   ];
   return (
     <>
-      <Profile username={data.user.username} name={null} />
+      <Profile
+        username={user.username}
+        name={null}
+        description={user.description}
+      />
 
       <div className="bg-white">
         <div>
