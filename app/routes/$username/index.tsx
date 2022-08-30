@@ -18,11 +18,11 @@ export async function loader({ params }: LoaderArgs) {
 
   const collectibles = await getFeaturedCollectibles(user.id);
 
-  return json({ collectibles });
+  return json({ collectibles, username });
 }
 
 export default function ProfilePage() {
   const data = useLoaderData<typeof loader>();
 
-  return <Gallery collectibles={data.collectibles} />;
+  return <Gallery collectibles={data.collectibles} username={data.username} />;
 }

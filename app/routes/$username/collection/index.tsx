@@ -46,9 +46,12 @@ export default function Collection() {
               <p className="text-sm font-medium text-gray-900">
                 {collectible.name}
               </p>
-              <p className="truncate text-sm text-gray-500">
-                {collectible.description}
-              </p>
+              {collectible.description &&
+                collectible.description.split(/\n|\\n/).map((line, idx) => (
+                  <p key={idx} className="text-sm text-gray-500">
+                    {line}
+                  </p>
+                ))}
             </Link>
           </div>
         </div>
