@@ -252,9 +252,6 @@ export default function ProfilePage() {
                           "whitespace-nowrap flex py-4 px-1 border-b-2 text-sm text-black"
                         )
                       }
-                      aria-current={(isActive: boolean) => {
-                        isActive ? "page" : undefined;
-                      }}
                       end
                     >
                       {tab.name}
