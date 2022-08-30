@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Logo from "./logo";
 
 export default function Navbar(props: { isMobileView: boolean }) {
@@ -7,9 +8,9 @@ export default function Navbar(props: { isMobileView: boolean }) {
       <div className="max-w-7xl mx-auto px-2 sm:px-4">
         <div className="relative h-20 flex justify-between">
           <div className="relative z-10 px-2 flex lg:px-0">
-            <div className="flex-shrink-0 flex items-center">
+            <Link to="/" className="flex-shrink-0 flex items-center">
               <Logo className="block h-8 w-auto" />
-            </div>
+            </Link>
           </div>
           <div className="relative z-10 flex items-center">
             <a
