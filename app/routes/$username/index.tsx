@@ -3,8 +3,7 @@ import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import Gallery from "~/components/gallery";
-import { getCategoriesByIds } from "~/models/category.server";
-import { getCollectibles } from "~/models/collectible.server";
+import { getFeaturedCollectibles } from "~/models/collectible.server";
 import { getUserByUsername } from "~/models/user.server";
 
 export async function loader({ params }: LoaderArgs) {
@@ -17,7 +16,7 @@ export async function loader({ params }: LoaderArgs) {
     throw new Error(`User ${username} not found`);
   }
 
-  const collectibles = await getCollectibles(user.id);
+  const collectibles = await getFeaturedCollectibles(user.id);
 
   return json({ collectibles });
 }

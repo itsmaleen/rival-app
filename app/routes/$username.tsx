@@ -29,7 +29,9 @@ export async function loader({ params }: LoaderArgs) {
     throw new Error(`User ${username} not found`);
   }
 
-  const collectiblesCount = await getCollectibleCounts(user.id);
+  const counts = getCollectibleCounts(user.id);
+  const allCollectiblesCount = await counts.allCollectiblesCount;
+  const featuredCollectiblesCount = await counts.featuredCollectiblesCount;
 
   const tagCategories = await getUniqueTagsByCollector(user.id);
   let filters: {
@@ -69,7 +71,8 @@ export async function loader({ params }: LoaderArgs) {
     user,
     filters,
     username,
-    collectiblesCount,
+    allCollectiblesCount,
+    featuredCollectiblesCount,
   });
 }
 
@@ -77,7 +80,6 @@ export default function ProfilePage() {
   const data = useLoaderData<typeof loader>();
 
   const { filters, username, user } = data;
-  console.log(filters);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [webFiltersOpen, setWebFiltersOpen] = useState(
     filters && filters.length > 0
@@ -87,13 +89,13 @@ export default function ProfilePage() {
     {
       name: "Featured",
       href: `/${username}`,
-      count: data.collectiblesCount,
+      count: data.featuredCollectiblesCount,
       current: true,
     },
     {
       name: "Collection",
       href: `/${username}/collection`,
-      count: data.collectiblesCount,
+      count: data.allCollectiblesCount,
       current: false,
     },
     // { name: "Wish List", href: "#", count: "4", current: false },

@@ -4,7 +4,7 @@ import { prisma } from "~/db.server";
 
 export type { Collectible } from "@prisma/client";
 
-export function getCollectibles(ownerId: User["id"]) {
+export function getAllCollectibles(ownerId: User["id"]) {
   return prisma.collectible.findMany({
     include: {
       tags: true,
@@ -15,10 +15,32 @@ export function getCollectibles(ownerId: User["id"]) {
   });
 }
 
+export function getFeaturedCollectibles(ownerId: User["id"]) {
+  return prisma.collectible.findMany({
+    include: {
+      tags: true,
+    },
+    where: {
+      ownerId,
+      featured: true,
+    },
+  });
+}
+
 export function getCollectibleCounts(ownerId: User["id"]) {
-  return prisma.collectible.count({
+  const allCollectiblesCount = prisma.collectible.count({
     where: {
       ownerId,
     },
   });
+  const featuredCollectiblesCount = prisma.collectible.count({
+    where: {
+      ownerId,
+      featured: true,
+    },
+  });
+  return {
+    allCollectiblesCount,
+    featuredCollectiblesCount,
+  };
 }
