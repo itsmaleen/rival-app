@@ -1,4 +1,4 @@
-import type { User, Collectible } from "@prisma/client";
+import type { User } from "@prisma/client";
 
 import { prisma } from "~/db.server";
 
@@ -9,6 +9,14 @@ export function getCollectibles(ownerId: User["id"]) {
     include: {
       tags: true,
     },
+    where: {
+      ownerId,
+    },
+  });
+}
+
+export function getCollectibleCounts(ownerId: User["id"]) {
+  return prisma.collectible.count({
     where: {
       ownerId,
     },
