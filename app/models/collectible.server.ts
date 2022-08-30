@@ -1,8 +1,16 @@
-import type { User } from "@prisma/client";
+import type { Collectible, User } from "@prisma/client";
 
 import { prisma } from "~/db.server";
 
 export type { Collectible } from "@prisma/client";
+
+export function getCollectible(id: Collectible["id"]) {
+  return prisma.collectible.findUnique({
+    where: {
+      id,
+    },
+  });
+}
 
 export function getAllCollectibles(ownerId: User["id"]) {
   return prisma.collectible.findMany({

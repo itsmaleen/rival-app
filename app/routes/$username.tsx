@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/solid";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Outlet, useLoaderData } from "@remix-run/react";
+import { NavLink, Outlet, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import Profile from "~/components/profile";
 import { getCollectibleCounts } from "~/models/collectible.server";
@@ -90,13 +90,11 @@ export default function ProfilePage() {
       name: "Featured",
       href: `/${username}`,
       count: data.featuredCollectiblesCount,
-      current: true,
     },
     {
       name: "Collection",
       href: `/${username}/collection`,
       count: data.allCollectiblesCount,
-      current: false,
     },
     // { name: "Wish List", href: "#", count: "4", current: false },
   ];
@@ -243,30 +241,30 @@ export default function ProfilePage() {
                 )}
                 <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                   {tabs.map((tab) => (
-                    <a
+                    <NavLink
                       key={tab.name}
-                      href="#"
-                      className={classNames(
-                        tab.current
-                          ? "border-black font-bold"
-                          : "border-transparent hover:text-gray-700 hover:border-gray-200",
-                        "whitespace-nowrap flex py-4 px-1 border-b-2 text-sm text-black"
-                      )}
-                      aria-current={tab.current ? "page" : undefined}
+                      to={tab.href}
+                      className={({ isActive }) =>
+                        classNames(
+                          isActive
+                            ? "border-black font-bold"
+                            : "border-transparent hover:text-gray-700 hover:border-gray-200",
+                          "whitespace-nowrap flex py-4 px-1 border-b-2 text-sm text-black"
+                        )
+                      }
+                      aria-current={(isActive: boolean) => {
+                        isActive ? "page" : undefined;
+                      }}
+                      end
                     >
                       {tab.name}
                       {tab.count ? (
-                        <span
-                          className={classNames(
-                            tab.current ? "font-bold" : "",
-                            "hidden md:inline-block"
-                          )}
-                        >
+                        <span className="hidden md:inline-block">
                           <span className="px-2">•</span>
                           {tab.count}
                         </span>
                       ) : null}
-                    </a>
+                    </NavLink>
                   ))}
                 </nav>
               </div>
@@ -283,7 +281,7 @@ export default function ProfilePage() {
                     id="tabs"
                     name="tabs"
                     className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                    defaultValue={tabs.find((tab: any) => tab.current).name}
+                    defaultValue="Featured"
                   >
                     {tabs.map((tab: any) => (
                       <option key={tab.name}>{tab.name}</option>
