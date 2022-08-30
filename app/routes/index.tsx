@@ -1,63 +1,52 @@
-import type { LoaderFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import Gallery from "~/components/gallery";
-import Profile from "~/components/profile";
+import { json } from "@remix-run/node";
+import { Link, useLoaderData } from "@remix-run/react";
+import { getUsers } from "~/models/user.server";
+
+const colors = [
+  "#B0AC93",
+  "#8E8CFC",
+  "#205B4D",
+  "#00B3FF",
+  "#FFDBEC",
+  "#367AFF",
+];
+
+export async function loader() {
+  const users = await getUsers();
+
+  return json({ users });
+}
 
 export default function Index() {
-  const tabs = [
-    { name: "Featured", href: "#", count: "52", current: false },
-    { name: "Collection", href: "#", count: "6", current: true },
-    { name: "Wish List", href: "#", count: "4", current: false },
-    { name: "Activity", href: "#", current: false },
-  ];
-
-  const filters = [
-    {
-      id: "collectibleType",
-      name: "Collectible Type",
-      options: [
-        { value: "white", label: "Trading Cards", checked: false },
-        { value: "beige", label: "Coins", checked: false },
-        { value: "blue", label: "Video Games", checked: true },
-        { value: "brown", label: "Figurines", checked: false },
-      ],
-    },
-    {
-      id: "franchise",
-      name: "Franchise",
-      options: [
-        { value: "new-arrivals", label: "New Arrivals", checked: false },
-        { value: "sale", label: "Sale", checked: false },
-        { value: "travel", label: "Travel", checked: true },
-        { value: "organization", label: "Organization", checked: false },
-        { value: "accessories", label: "Accessories", checked: false },
-      ],
-    },
-    {
-      id: "grading",
-      name: "Grading",
-      options: [
-        { value: "2l", label: "2L", checked: false },
-        { value: "6l", label: "6L", checked: false },
-        { value: "12l", label: "12L", checked: false },
-        { value: "18l", label: "18L", checked: false },
-        { value: "20l", label: "20L", checked: false },
-        { value: "40l", label: "40L", checked: true },
-      ],
-    },
-  ];
+  const data = useLoaderData<typeof loader>();
+  const { users } = data;
   return (
-    <>
-      <Profile />
-      <Gallery
-        filters={filters}
-        tabs={tabs}
-        className="max-w-7xl mx-auto px-2 sm:px-4 py-10"
-      />
-      {/* <div className="max-w-7xl mx-auto px-2 sm:px-4 py-10 flex space-x-2">
-        <Sidebar />
-        <Gallery />
-      </div> */}
-    </>
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-3xl py-16">
+        <ul role="list" className="divide-y divide-gray-200">
+          {users.map((user, userIdx) => (
+            <li key={user.username} className="py-4">
+              <Link to={`/${user.username}`}>
+                <div className="flex space-x-3">
+                  <div
+                    className="h-6 w-6 rounded-full"
+                    style={{ backgroundColor: colors[userIdx % colors.length] }}
+                  />
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-medium">{user.username}</h3>
+                      <p className="text-sm text-gray-500">1h</p>
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      Added 15 collectibles to their collection
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }

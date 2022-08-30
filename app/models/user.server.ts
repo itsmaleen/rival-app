@@ -11,3 +11,15 @@ export async function getUserByUsername(username: User["username"]) {
     },
   });
 }
+
+export async function getUsers() {
+  return prisma.user.findMany({
+    select: {
+      username: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
