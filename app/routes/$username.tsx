@@ -101,6 +101,7 @@ export default function ProfilePage() {
   return (
     <>
       <Profile
+        imageUrl={user.imageUrl}
         username={user.username}
         name={null}
         description={user.description}

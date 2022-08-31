@@ -7,6 +7,7 @@ export default function Profile(props: {
   name: string | null;
   username: string;
   description: string | null;
+  imageUrl: string | null;
 }) {
   const { name, username, description } = props;
   const social = [
@@ -49,11 +50,15 @@ export default function Profile(props: {
       </div>
       <div className="text-center mt-8">
         <div className="flex">
-          <img
-            className="h-24 w-24 mx-auto rounded-full ring-4 ring-white sm:h-28 sm:w-28"
-            src="https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=1024&h=1024&q=80"
-            alt=""
-          />
+          {props.imageUrl ? (
+            <img
+              className="h-24 w-24 mx-auto rounded-full ring-4 ring-white sm:h-28 sm:w-28"
+              src={props.imageUrl}
+              alt={props.username}
+            />
+          ) : (
+            <div className="h-24 w-24 mx-auto rounded-full bg-primary-dark sm:h-28 sm:w-28"></div>
+          )}
         </div>
         <p className="mt-3 text-2xl tracking-tight font-bold text-gray-900 sm:text-3xl sm:tracking-tight lg:tracking-tight">
           {name || username}
