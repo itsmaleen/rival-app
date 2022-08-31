@@ -1,37 +1,46 @@
+import type { UserLink } from "@prisma/client";
 import FacebookIcon from "./icons/fb";
 import InstagramIcon from "./icons/instagram";
 import TwitchIcon from "./icons/twitch";
 import TwitterIcon from "./icons/twitter";
+import YoutubeIcon from "./icons/youtube";
+import EbayIcon from "./icons/ebay";
+
+function getIcon(name: string) {
+  if (name === "facebook") {
+    return FacebookIcon;
+  } else if (name === "instagram") {
+    return InstagramIcon;
+  } else if (name === "twitch") {
+    return TwitchIcon;
+  } else if (name === "twitter") {
+    return TwitterIcon;
+  } else if (name === "youtube") {
+    return YoutubeIcon;
+  } else if (name === "ebay") {
+    return EbayIcon;
+  } else {
+    return null;
+  }
+}
 
 export default function Profile(props: {
   name: string | null;
   username: string;
   description: string | null;
   imageUrl: string | null;
+  links: UserLink[] | null;
 }) {
-  const { name, username, description } = props;
-  const social = [
-    {
-      name: "Facebook",
-      href: "#",
-      icon: FacebookIcon,
-    },
-    {
-      name: "Twitch",
-      href: "#",
-      icon: TwitchIcon,
-    },
-    {
-      name: "Instagram",
-      href: "#",
-      icon: InstagramIcon,
-    },
-    {
-      name: "Twitter",
-      href: "#",
-      icon: TwitterIcon,
-    },
-  ];
+  const { name, username, description, links } = props;
+  console.log(links);
+  const social = links
+    ? links.map((link) => ({
+        name: link.name,
+        href: link.url,
+        icon: getIcon(link.name),
+      }))
+    : [];
+
   return (
     <div className="max-w-7xl mx-auto px-2 sm:px-4 py-10">
       <div className="flex justify-end">
@@ -40,7 +49,9 @@ export default function Profile(props: {
             <a
               key={item.name}
               href={item.href}
+              target="_blank"
               className="text-gray-400 hover:text-gray-300"
+              rel="noreferrer"
             >
               <span className="sr-only">{item.name}</span>
               <item.icon className="h-6 w-6" aria-hidden="true" />

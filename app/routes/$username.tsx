@@ -14,6 +14,7 @@ import Profile from "~/components/profile";
 import { getCollectibleCounts } from "~/models/collectible.server";
 import { getUserByUsername } from "~/models/user.server";
 import { getUniqueTagsByCollector } from "~/models/tag.server";
+import { getExternalLinks } from "~/models/links.server";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -28,6 +29,7 @@ export async function loader({ params }: LoaderArgs) {
   if (!user) {
     throw new Error(`User ${username} not found`);
   }
+  const links = await getExternalLinks(user.id);
 
   const counts = getCollectibleCounts(user.id);
   const allCollectiblesCount = await counts.allCollectiblesCount;
@@ -73,6 +75,7 @@ export async function loader({ params }: LoaderArgs) {
     username,
     allCollectiblesCount,
     featuredCollectiblesCount,
+    links,
   });
 }
 
@@ -101,6 +104,7 @@ export default function ProfilePage() {
   return (
     <>
       <Profile
+        links={data.links}
         imageUrl={user.imageUrl}
         username={user.username}
         name={null}
