@@ -1,4 +1,5 @@
 import { Link } from "@remix-run/react";
+import { motion } from "framer-motion";
 
 export default function Card(props: any) {
   const imageOnly = props.imageOnly || false;
@@ -20,15 +21,17 @@ export default function Card(props: any) {
           />
         </div>
       ) : (
-        <div className="group relative bg-white border-2 border-neutral-250 rounded-lg flex flex-col overflow-hidden p-6 divide-y-2 space-y-4 divide-neutral-150">
+        <div className="relative bg-white border-2 border-neutral-250 rounded-lg flex flex-col overflow-hidden p-6 divide-y-2 space-y-4 divide-neutral-150">
           <Link
             to={`/${props.username}/collection/${props.id}`}
-            className="group-hover:opacity-75 sm:aspect-none sm:h-80"
+            className="sm:aspect-none sm:h-80"
           >
-            <img
+            <motion.img
               src={src}
               alt={name}
               className="w-full h-full object-center object-contain sm:w-full sm:h-full"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             />
           </Link>
           <div className="flex-1 flex flex-col pt-4">
