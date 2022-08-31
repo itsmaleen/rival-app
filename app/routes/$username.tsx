@@ -7,6 +7,7 @@ import {
   ChevronDownIcon,
 } from "@heroicons/react/solid";
 import type { LoaderArgs } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { NavLink, Outlet, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
@@ -231,7 +232,7 @@ export default function ProfilePage() {
           <main className="max-w-7xl mx-auto px-2 sm:px-4 py-10">
             <div className="relative z-10 flex items-baseline justify-between pb-6 sm:pb-0 border-b border-gray-200">
               {/* Tabs - Web */}
-              <div className="hidden sm:flex items-center">
+              <div className="flex items-center">
                 {filters && filters.length > 0 && (
                   <div className="hidden sm:flex items-center mr-8">
                     <button
@@ -261,7 +262,7 @@ export default function ProfilePage() {
                     >
                       {tab.name}
                       {tab.count ? (
-                        <span className="hidden md:inline-block">
+                        <span className="inline-block">
                           <span className="px-2">•</span>
                           {tab.count}
                         </span>
@@ -273,25 +274,6 @@ export default function ProfilePage() {
               {/* End of Tabs - Web */}
 
               <div className="flex items-center">
-                {/* Tabs - Mobile */}
-                <div className="sm:hidden">
-                  <label htmlFor="tabs" className="sr-only">
-                    Select a tab
-                  </label>
-                  {/* Use an "onChange" listener to redirect the user to the selected tab URL. */}
-                  <select
-                    id="tabs"
-                    name="tabs"
-                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                    defaultValue="Featured"
-                  >
-                    {tabs.map((tab: any) => (
-                      <option key={tab.name}>{tab.name}</option>
-                    ))}
-                  </select>
-                </div>
-                {/* End of Tabs - Mobile */}
-
                 <button
                   type="button"
                   className="p-2 -m-2 ml-4 sm:ml-6 text-gray-400 hover:text-gray-500 lg:hidden"

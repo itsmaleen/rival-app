@@ -32,7 +32,6 @@ export default function Profile(props: {
   links: UserLink[] | null;
 }) {
   const { name, username, description, links } = props;
-  console.log(links);
   const social = links
     ? links.map((link) => ({
         name: link.name,
