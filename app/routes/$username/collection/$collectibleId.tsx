@@ -46,7 +46,7 @@ export default function Collectible() {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 sm:bg-opacity-95 transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -62,7 +62,7 @@ export default function Collectible() {
             >
               <Dialog.Panel className="transform rounded-lg bg-white shadow-xl transition-all  flex flex-col overflow-hidden p-6 divide-y-2 space-y-4">
                 <div>
-                  <div className="group-hover:opacity-75 sm:aspect-none sm:h-96">
+                  <div className="group-hover:opacity-75 sm:aspect-none sm:w-96">
                     <img
                       src={collectible.imageUrl}
                       alt={collectible.name}
