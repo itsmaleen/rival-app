@@ -63,20 +63,23 @@ export default function Profile(props: {
       </div>
       <div className="mt-8 sm:grid sm:grid-cols-7">
         <div className="space-y-2 sm:grid sm:grid-cols-2 sm:gap-12 sm:space-y-0 lg:gap-x-4 mt-8 text-center sm:text-left sm:col-start-2 sm:col-end-6">
-          <div className="flex justify-center sm:justify-end space-x-4 lg:space-x-6">
+          <div className="flex justify-center sm:justify-end space-x-4 lg:space-x-6 my-auto">
             {props.imageUrl ? (
               <img
-                className="h-24 w-24 rounded-full ring-4 ring-white sm:h-28 sm:w-28"
+                className="h-24 w-24 rounded-full ring-4 ring-white sm:h-36 sm:w-36"
                 src={props.imageUrl}
                 alt={props.username}
               />
             ) : (
-              <div className="h-24 w-24 rounded-full bg-primary-dark sm:h-28 sm:w-28"></div>
+              <div className="h-24 w-24 rounded-full bg-primary-dark sm:h-36 sm:w-36"></div>
             )}
           </div>
-          <div className="flex space-y-1 justify-center flex-col">
-            <p className="text-2xl tracking-tight font-bold sm:text-3xl sm:tracking-tight lg:tracking-tight">
-              {name || username}
+          <div className="flex space-y-0.5 justify-center flex-col">
+            <p className="text-2xl font-bold sm:text-3xl">{name}</p>
+            <p className="text-sm sm:text-base font-semibold pt-1 pb-2">
+              <span className="bg-gray-300 rounded-sm py-1 px-2">
+                @{username}
+              </span>
             </p>
             {description &&
               description.length > 0 &&

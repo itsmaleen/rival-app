@@ -17,7 +17,7 @@ export default function Navbar(props: { isMobileView: boolean }) {
               href={`https://s80o7xdqcu7.typeform.com/to/lUEhS3bd?utm_source=app.withrival.com&utm_medium=${
                 isMobileView ? "mobile" : "web"
               }`}
-              className="uppercase font-bold inline-flex items-center px-9 py-3.5 border border-transparent text-sm rounded text-black bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
+              className="uppercase font-bold inline-flex items-center px-9 py-3.5 border border-transparent text-sm rounded text-white bg-black hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
             >
               Request Access
             </a>

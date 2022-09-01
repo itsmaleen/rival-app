@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Dialog, Disclosure, Transition } from "@headlessui/react";
 import { XIcon } from "@heroicons/react/outline";
 import {
@@ -7,7 +7,6 @@ import {
   ChevronDownIcon,
 } from "@heroicons/react/solid";
 import type { LoaderArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { NavLink, Outlet, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
@@ -21,7 +20,7 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-export async function loader({ params }: LoaderArgs) {
+export async function loader({ params, request }: LoaderArgs) {
   invariant(params.username, "username is required");
 
   const username = params.username;
@@ -70,6 +69,9 @@ export async function loader({ params }: LoaderArgs) {
     }
   });
 
+  const url = new URL(request.url);
+  const inCollection = url.pathname.includes("/collection");
+
   return json({
     user,
     filters,
@@ -77,17 +79,22 @@ export async function loader({ params }: LoaderArgs) {
     allCollectiblesCount,
     featuredCollectiblesCount,
     links,
+    inCollection,
   });
 }
 
 export default function ProfilePage() {
   const data = useLoaderData<typeof loader>();
 
-  const { filters, username, user } = data;
+  const { filters, username, user, inCollection } = data;
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [webFiltersOpen, setWebFiltersOpen] = useState(
-    filters && filters.length > 0
-  );
+  const [webFiltersOpen, setWebFiltersOpen] = useState(false);
+  const [hideFilter, setHideFilter] = useState(!inCollection);
+
+  // Watch inCollection to hide filter if not inCollection
+  useEffect(() => {
+    setHideFilter(!inCollection);
+  }, [inCollection]);
 
   const tabs = [
     {
@@ -108,7 +115,7 @@ export default function ProfilePage() {
         links={data.links}
         imageUrl={user.imageUrl}
         username={user.username}
-        name={null}
+        name={user.name}
         description={user.description}
       />
 
@@ -233,7 +240,7 @@ export default function ProfilePage() {
             <div className="relative z-10 flex items-baseline justify-between pb-6 sm:pb-0 border-b border-gray-200">
               {/* Tabs - Web */}
               <div className="flex items-center">
-                {filters && filters.length > 0 && (
+                {!hideFilter && (
                   <div className="hidden sm:flex items-center mr-8">
                     <button
                       type="button"
@@ -273,16 +280,18 @@ export default function ProfilePage() {
               </div>
               {/* End of Tabs - Web */}
 
-              <div className="flex items-center">
-                <button
-                  type="button"
-                  className="p-2 -m-2 ml-4 sm:ml-6 text-gray-400 hover:text-gray-500 lg:hidden"
-                  onClick={() => setMobileFiltersOpen(true)}
-                >
-                  <span className="sr-only">Filters</span>
-                  <FilterIcon className="w-5 h-5" aria-hidden="true" />
-                </button>
-              </div>
+              {!hideFilter && (
+                <div className="flex items-center">
+                  <button
+                    type="button"
+                    className="p-2 -m-2 ml-4 sm:ml-6 text-gray-400 hover:text-gray-500 lg:hidden"
+                    onClick={() => setMobileFiltersOpen(true)}
+                  >
+                    <span className="sr-only">Filters</span>
+                    <FilterIcon className="w-5 h-5" aria-hidden="true" />
+                  </button>
+                </div>
+              )}
             </div>
 
             <section aria-labelledby="products-heading" className="pt-6 pb-24">

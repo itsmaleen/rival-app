@@ -23,3 +23,16 @@ export async function getUsers() {
     },
   });
 }
+
+export async function getUsersWithCollectiblesCount() {
+  return prisma.user.findMany({
+    include: {
+      _count: {
+        select: { collectibles: true },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}

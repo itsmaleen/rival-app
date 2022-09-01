@@ -1,6 +1,6 @@
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { getUsers } from "~/models/user.server";
+import { getUsersWithCollectiblesCount } from "~/models/user.server";
 
 const colors = [
   "#B0AC93",
@@ -12,7 +12,7 @@ const colors = [
 ];
 
 export async function loader() {
-  const users = await getUsers();
+  const users = await getUsersWithCollectiblesCount();
 
   return json({ users });
 }
@@ -20,6 +20,7 @@ export async function loader() {
 export default function Index() {
   const data = useLoaderData<typeof loader>();
   const { users } = data;
+  console.log(users);
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl py-16">
@@ -35,10 +36,11 @@ export default function Index() {
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-medium">{user.username}</h3>
-                      <p className="text-sm text-gray-500">1h</p>
+                      {/* <p className="text-sm text-gray-500">1h</p> */}
                     </div>
                     <p className="text-sm text-gray-500">
-                      Added 15 collectibles to their collection
+                      Added {user._count.collectibles} collectibles to their
+                      collection
                     </p>
                   </div>
                 </div>
