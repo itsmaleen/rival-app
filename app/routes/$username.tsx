@@ -98,7 +98,7 @@ export default function ProfilePage() {
 
   const tabs = [
     {
-      name: "Featured",
+      name: "Showcase",
       href: `/${username}`,
       count: data.featuredCollectiblesCount,
     },

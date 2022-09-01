@@ -27,6 +27,7 @@ export function getFeaturedCollectibles(ownerId: User["id"]) {
   return prisma.collectible.findMany({
     include: {
       tags: true,
+      images: true,
     },
     where: {
       ownerId,

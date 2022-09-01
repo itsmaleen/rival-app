@@ -82,7 +82,7 @@ export default function Collectible() {
                       dragElastic={0.16}
                       dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
                       whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileTap={{ scale: 0.95, cursor: "grabbing" }}
                     />
                   </div>
                   <div className="flex-1 flex flex-col pt-4 sm:pt-8">
