@@ -1,4 +1,4 @@
-import type { LoaderFunction, MetaFunction } from "@remix-run/node";
+import type { LoaderArgs, LoaderFunction, MetaFunction } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -21,8 +21,8 @@ export function links() {
   return [{ rel: "stylesheet", href: styles }];
 }
 
-export const loader: LoaderFunction = async ({ request }) => {
-  let isMobileView = (
+export const loader: LoaderFunction = async ({ request }: LoaderArgs) => {
+  const isMobileView = (
     request ? request.headers.get("user-agent") : navigator.userAgent
   ).match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i);
 

@@ -9,15 +9,20 @@ import { useLoaderData } from "@remix-run/react";
 // TODO: Look into reducing bundle size
 import { motion, useMotionValue, useTransform } from "framer-motion";
 
-export async function loader({ params }: LoaderArgs) {
+export async function loader({ params, request }: LoaderArgs) {
   invariant(params.collectibleId, "collectible id is required");
+
+  const isMobileView = (
+    request ? request.headers.get("user-agent") : navigator.userAgent
+  ).match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i);
+
   const collectible = await getCollectible(Number(params.collectibleId));
   console.log(collectible);
   if (!collectible) {
     console.log("test");
     return redirect("/");
   }
-  return json({ collectible });
+  return json({ collectible, isMobileView });
 }
 
 export default function Collectible() {
@@ -79,7 +84,7 @@ export default function Collectible() {
                       className="w-full h-full object-center object-contain sm:w-full sm:h-full"
                       style={{ x, y, rotateX, rotateY, z: 100 }}
                       drag
-                      dragElastic={0.16}
+                      dragElastic={data.isMobileView ? 0.4 : 0.16}
                       dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95, cursor: "grabbing" }}
