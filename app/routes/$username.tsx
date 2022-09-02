@@ -1,11 +1,13 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useState } from "react";
 import { Dialog, Disclosure, Transition } from "@headlessui/react";
-import { XIcon } from "@heroicons/react/outline";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
-  FilterIcon,
+  FunnelIcon,
   ChevronUpIcon,
   ChevronDownIcon,
-} from "@heroicons/react/solid";
+  DeviceTabletIcon,
+  Squares2X2Icon,
+} from "@heroicons/react/20/solid";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { NavLink, Outlet, useLoaderData } from "@remix-run/react";
@@ -83,6 +85,13 @@ export async function loader({ params, request }: LoaderArgs) {
   });
 }
 
+type ViewOption = "GRID" | "CARD";
+
+export type FilterContextType = {
+  setHideFilter: (hideFilter: boolean) => void;
+  activeViewOption: ViewOption;
+};
+
 export default function ProfilePage() {
   const data = useLoaderData<typeof loader>();
 
@@ -90,11 +99,9 @@ export default function ProfilePage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [webFiltersOpen, setWebFiltersOpen] = useState(false);
   const [hideFilter, setHideFilter] = useState(!inCollection);
+  const [activeViewOption, setActiveViewOption] = useState<ViewOption>("GRID");
 
-  // Watch inCollection to hide filter if not inCollection
-  useEffect(() => {
-    setHideFilter(!inCollection);
-  }, [inCollection]);
+  const context: FilterContextType = { setHideFilter, activeViewOption };
 
   const tabs = [
     {
@@ -162,7 +169,7 @@ export default function ProfilePage() {
                           onClick={() => setMobileFiltersOpen(false)}
                         >
                           <span className="sr-only">Close menu</span>
-                          <XIcon className="h-6 w-6" aria-hidden="true" />
+                          <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                         </button>
                       </div>
 
@@ -203,7 +210,7 @@ export default function ProfilePage() {
                                     {section.options.map(
                                       (option, optionIdx) => (
                                         <div
-                                          key={option.value}
+                                          key={optionIdx}
                                           className="flex items-center"
                                         >
                                           <input
@@ -248,7 +255,7 @@ export default function ProfilePage() {
                       onClick={() => setWebFiltersOpen(!webFiltersOpen)}
                     >
                       <span className="sr-only">Filters</span>
-                      <FilterIcon className="w-5 h-5" aria-hidden="true" />
+                      <FunnelIcon className="w-5 h-5" aria-hidden="true" />
                     </button>
                   </div>
                 )}
@@ -288,13 +295,42 @@ export default function ProfilePage() {
                     onClick={() => setMobileFiltersOpen(true)}
                   >
                     <span className="sr-only">Filters</span>
-                    <FilterIcon className="w-5 h-5" aria-hidden="true" />
+                    <FunnelIcon className="w-5 h-5" aria-hidden="true" />
+                  </button>
+                </div>
+              )}
+              {/* View options */}
+              {!hideFilter && (
+                <div className="ml-6 items-center rounded-lg bg-gray-100 p-0.5 flex">
+                  <button
+                    type="button"
+                    onClick={() => setActiveViewOption("CARD")}
+                    className={`ml-0.5 rounded-md p-1.5 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary ${
+                      activeViewOption === "CARD"
+                        ? "bg-white shadow-sm"
+                        : "hover:bg-white hover:shadow-sm"
+                    }`}
+                  >
+                    <DeviceTabletIcon className="h-5 w-5" aria-hidden="true" />
+                    <span className="sr-only">Use list view</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveViewOption("GRID")}
+                    className={`ml-0.5 rounded-md p-1.5 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary ${
+                      activeViewOption === "GRID"
+                        ? "bg-white shadow-sm"
+                        : "hover:bg-white hover:shadow-sm"
+                    }`}
+                  >
+                    <Squares2X2Icon className="h-5 w-5" aria-hidden="true" />
+                    <span className="sr-only">Use grid view</span>
                   </button>
                 </div>
               )}
             </div>
 
-            <section aria-labelledby="products-heading" className="pt-6 pb-24">
+            <section className="pt-6 pb-24">
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-8 gap-y-10">
                 {/* Filters */}
                 {filters && filters.length > 0 && (
@@ -389,7 +425,7 @@ export default function ProfilePage() {
                 <div
                   className={webFiltersOpen ? "lg:col-span-4" : "lg:col-span-5"}
                 >
-                  <Outlet />
+                  <Outlet context={context} />
                 </div>
               </div>
             </section>

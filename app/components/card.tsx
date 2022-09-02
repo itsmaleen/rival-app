@@ -24,7 +24,7 @@ export default function Card(props: any) {
   const imageIdx = 0;
 
   return (
-    <div className="relative bg-white border-2 border-neutral-250 rounded-lg flex flex-col overflow-hidden divide-y-2 divide-neutral-150">
+    <div className="relative bg-white border-2 border-neutral-250 rounded-lg flex flex-col overflow-hidden">
       <Link to={`/${username}/collection/${id}`} className="">
         <motion.img
           src={images[imageIdx].url}

@@ -20,7 +20,6 @@ export async function loader() {
 export default function Index() {
   const data = useLoaderData<typeof loader>();
   const { users } = data;
-  console.log(users);
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl py-16">
