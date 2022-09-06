@@ -8,9 +8,16 @@ import {
   DeviceTabletIcon,
   Squares2X2Icon,
 } from "@heroicons/react/20/solid";
-import type { LoaderArgs } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, NavLink, Outlet, useLoaderData } from "@remix-run/react";
+import {
+  Form,
+  NavLink,
+  Outlet,
+  useLoaderData,
+  useLocation,
+} from "@remix-run/react";
 import invariant from "tiny-invariant";
 import Profile from "~/components/profile";
 import { getCollectibleCounts } from "~/models/collectible.server";
@@ -20,6 +27,14 @@ import { getExternalLinks } from "~/models/links.server";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
+}
+
+export async function action({ request }: ActionArgs) {
+  let formData = await request.formData();
+  // let nav = formData.get("nav");
+  console.log(formData);
+
+  return redirect(formData.get("tabs")?.toString() || "/");
 }
 
 export async function loader({ params, request }: LoaderArgs) {
@@ -101,6 +116,9 @@ export type FilterContextType = {
 
 export default function ProfilePage() {
   const data = useLoaderData<typeof loader>();
+  const location = useLocation();
+
+  console.log(location);
 
   const { filterOptions, username, user, inCollection, filters } = data;
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -112,7 +130,8 @@ export default function ProfilePage() {
 
   const context: FilterContextType = { setHideFilter, activeViewOption };
 
-  const formRef = useRef<HTMLFormElement>(null);
+  const filterFormRef = useRef<HTMLFormElement>(null);
+  const mobileNavFormRef = useRef<HTMLFormElement>(null);
 
   const tabs = [
     {
@@ -188,7 +207,7 @@ export default function ProfilePage() {
                       <Form
                         reloadDocument
                         action={`/${username}/collection#tabs`}
-                        ref={formRef}
+                        ref={filterFormRef}
                         method="get"
                         className="mt-4 border-t border-gray-200"
                       >
@@ -223,10 +242,12 @@ export default function ProfilePage() {
                                   >
                                     <input
                                       id={`filter-mobile-${section.id}-${optionIdx}`}
-                                      name="filter[]"
+                                      name="filter"
                                       defaultValue={option.value.toString()}
                                       type="checkbox"
-                                      onChange={() => formRef.current?.submit()}
+                                      onChange={() =>
+                                        filterFormRef.current?.submit()
+                                      }
                                       defaultChecked={option.checked}
                                       className="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
                                     />
@@ -251,8 +272,8 @@ export default function ProfilePage() {
           )}
           <main className="max-w-7xl mx-auto px-2 sm:px-4 py-10">
             <div className="relative z-10 flex items-baseline justify-between pb-6 sm:pb-0 border-b border-gray-200">
-              {/* Tabs */}
-              <div id="tabs" className="flex items-center">
+              {/* Tabs - Web */}
+              <div id="tabs" className="hidden sm:flex items-center">
                 {!hideFilter && (
                   <div className="hidden sm:flex items-center mr-8">
                     <button
@@ -291,10 +312,38 @@ export default function ProfilePage() {
                   ))}
                 </nav>
               </div>
-              {/* End of Tabs */}
+              {/* End of Tabs - Web */}
 
-              {!hideFilter && (
-                <div className="flex items-center">
+              <div className="flex items-center">
+                {/* Tabs - Mobile */}
+                <Form
+                  method="post"
+                  name="nav"
+                  ref={mobileNavFormRef}
+                  className="sm:hidden"
+                >
+                  <label htmlFor="tabs" className="sr-only">
+                    Select a tab
+                  </label>
+                  {/* Use an "onChange" listener to redirect the user to the selected tab URL. */}
+                  <select
+                    id="tabs"
+                    name="tabs"
+                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    onChange={() => mobileNavFormRef.current?.submit()}
+                    value={
+                      tabs.find((tab) => tab.href === location.pathname)?.href
+                    }
+                  >
+                    {tabs.map((tab) => (
+                      <option key={tab.name} value={tab.href}>
+                        {tab.name}
+                      </option>
+                    ))}
+                  </select>
+                </Form>
+                {/* End of Tabs - Mobile */}
+                {!hideFilter && (
                   <button
                     type="button"
                     className="p-2 -m-2 ml-4 sm:ml-6 text-gray-400 hover:text-gray-500 lg:hidden"
@@ -303,8 +352,8 @@ export default function ProfilePage() {
                     <span className="sr-only">Filters</span>
                     <FunnelIcon className="w-5 h-5" aria-hidden="true" />
                   </button>
-                </div>
-              )}
+                )}
+              </div>
               {/* View options */}
               {!hideFilter && (
                 <div className="ml-6 items-center rounded-lg bg-gray-100 p-0.5 flex">
@@ -343,7 +392,7 @@ export default function ProfilePage() {
                   <Form
                     reloadDocument
                     action={`/${username}/collection#tabs`}
-                    ref={formRef}
+                    ref={filterFormRef}
                     method="get"
                     className={`hidden ${webFiltersOpen ? "lg:block" : ""}`}
                   >
@@ -391,7 +440,7 @@ export default function ProfilePage() {
                                           defaultValue={option.value}
                                           type="checkbox"
                                           onChange={() =>
-                                            formRef.current?.submit()
+                                            filterFormRef.current?.submit()
                                           }
                                           defaultChecked={option.checked}
                                           className="h-4 w-4 border-gray-300 rounded text-primary focus:ring-primary-dark"
@@ -414,7 +463,7 @@ export default function ProfilePage() {
                                         defaultValue={section.options[0].value.toString()}
                                         type="checkbox"
                                         onChange={() =>
-                                          formRef.current?.submit()
+                                          filterFormRef.current?.submit()
                                         }
                                         defaultChecked={
                                           section.options[0].checked
