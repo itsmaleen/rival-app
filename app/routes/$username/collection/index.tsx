@@ -3,11 +3,13 @@ import { json } from "@remix-run/node";
 import { Link, useLoaderData, useOutletContext } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import Card from "~/components/card";
-import { getAllCollectibles } from "~/models/collectible.server";
+import type { Collectible } from "~/models/collectible.server";
+import { getAllCollectiblesWithTags } from "~/models/collectible.server";
+import type { Tag } from "~/models/tag.server";
 import { getUserByUsername } from "~/models/user.server";
 import type { FilterContextType } from "../../$username";
 
-export async function loader({ params }: LoaderArgs) {
+export async function loader({ params, request }: LoaderArgs) {
   invariant(params.username, "username is required");
 
   const username = params.username;
@@ -17,9 +19,24 @@ export async function loader({ params }: LoaderArgs) {
     throw new Error(`User ${username} not found`);
   }
 
-  const collectibles = await getAllCollectibles(user.id);
+  const url = new URL(request.url);
+  const tags = url.searchParams.getAll("filter");
 
-  return json({ collectibles, username });
+  let collectibles: (Collectible & { tags: Tag[] })[];
+  const allCollectibles = await getAllCollectiblesWithTags(user.id);
+
+  if (tags && tags.length > 0) {
+    collectibles = allCollectibles.filter((collectible) => {
+      const collectibleTags = collectible.tags.map((tag) => tag.name);
+      return tags.some((tag) => {
+        return collectibleTags.includes(tag);
+      });
+    });
+  } else {
+    collectibles = allCollectibles;
+  }
+
+  return json({ collectibles, username, tags });
 }
 
 export default function Collection() {

@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { Dialog, Disclosure, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import {
@@ -10,7 +10,7 @@ import {
 } from "@heroicons/react/20/solid";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { NavLink, Outlet, useLoaderData } from "@remix-run/react";
+import { Form, NavLink, Outlet, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import Profile from "~/components/profile";
 import { getCollectibleCounts } from "~/models/collectible.server";
@@ -33,6 +33,11 @@ export async function loader({ params, request }: LoaderArgs) {
   }
   const links = await getExternalLinks(user.id);
 
+  const url = new URL(request.url);
+  const inCollection = url.pathname.includes("/collection");
+
+  const tags = url.searchParams.getAll("filter");
+
   const counts = getCollectibleCounts(user.id);
   const allCollectiblesCount = await counts.allCollectiblesCount;
   const featuredCollectiblesCount = await counts.featuredCollectiblesCount;
@@ -42,8 +47,10 @@ export async function loader({ params, request }: LoaderArgs) {
     id: number;
     name: String;
     options: { id: String; value: String; label: String; checked: boolean }[];
+    defaultOpen: boolean;
   }[] = [];
   tagCategories.forEach((tagCategory, tagCategoryIdx) => {
+    const isChecked = tags.includes(tagCategory.tag.toString());
     if (!filters.some((filter) => filter.name === tagCategory.category)) {
       filters.push({
         id: tagCategoryIdx,
@@ -53,35 +60,35 @@ export async function loader({ params, request }: LoaderArgs) {
             id: tagCategory.tag,
             value: tagCategory.tag,
             label: tagCategory.tag,
-            checked: true,
+            checked: isChecked,
           },
         ],
+        defaultOpen: isChecked,
       });
     } else {
       filters.forEach((filter) => {
         if (filter.name === tagCategory.category) {
+          filter.defaultOpen = filter.defaultOpen || isChecked;
           filter.options.push({
             id: tagCategory.tag,
             value: tagCategory.tag,
             label: tagCategory.tag,
-            checked: true,
+            checked: isChecked,
           });
         }
       });
     }
   });
 
-  const url = new URL(request.url);
-  const inCollection = url.pathname.includes("/collection");
-
   return json({
     user,
-    filters,
+    filterOptions: filters,
     username,
     allCollectiblesCount,
     featuredCollectiblesCount,
     links,
     inCollection,
+    filters,
   });
 }
 
@@ -95,13 +102,17 @@ export type FilterContextType = {
 export default function ProfilePage() {
   const data = useLoaderData<typeof loader>();
 
-  const { filters, username, user, inCollection } = data;
+  const { filterOptions, username, user, inCollection, filters } = data;
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [webFiltersOpen, setWebFiltersOpen] = useState(false);
+  const [webFiltersOpen, setWebFiltersOpen] = useState(
+    filters && filters.length > 0
+  );
   const [hideFilter, setHideFilter] = useState(!inCollection);
   const [activeViewOption, setActiveViewOption] = useState<ViewOption>("GRID");
 
   const context: FilterContextType = { setHideFilter, activeViewOption };
+
+  const formRef = useRef<HTMLFormElement>(null);
 
   const tabs = [
     {
@@ -129,7 +140,7 @@ export default function ProfilePage() {
       <div className="bg-white">
         <div>
           {/* Mobile filter dialog */}
-          {filters && filters.length > 0 && (
+          {filterOptions && filterOptions.length > 0 && (
             <Transition.Root show={mobileFiltersOpen} as={Fragment}>
               <Dialog
                 as="div"
@@ -174,69 +185,64 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Filters */}
-                      <form className="mt-4 border-t border-gray-200">
+                      <Form
+                        reloadDocument
+                        action={`/${username}/collection#tabs`}
+                        ref={formRef}
+                        method="get"
+                        className="mt-4 border-t border-gray-200"
+                      >
                         <h3 className="sr-only">Categories</h3>
 
-                        {filters.map((section) => (
+                        {filterOptions.map((section) => (
                           <Disclosure
                             as="div"
                             key={section.id}
                             className="border-t border-gray-200 px-4 py-6"
+                            defaultOpen={section.defaultOpen}
                           >
-                            {({ open }) => (
-                              <>
-                                <h3 className="-mx-2 -my-3 flow-root">
-                                  <Disclosure.Button className="px-2 py-3 bg-white w-full flex items-center justify-between text-gray-400 hover:text-gray-500">
-                                    <span className="font-bold text-gray-900">
-                                      {section.name}
-                                    </span>
-                                    <span className="ml-6 flex items-center">
-                                      {open ? (
-                                        <ChevronUpIcon
-                                          className="h-5 w-5"
-                                          aria-hidden="true"
-                                        />
-                                      ) : (
-                                        <ChevronDownIcon
-                                          className="h-5 w-5"
-                                          aria-hidden="true"
-                                        />
-                                      )}
-                                    </span>
-                                  </Disclosure.Button>
-                                </h3>
-                                <Disclosure.Panel className="pt-6">
-                                  <div className="space-y-6">
-                                    {section.options.map(
-                                      (option, optionIdx) => (
-                                        <div
-                                          key={optionIdx}
-                                          className="flex items-center"
-                                        >
-                                          <input
-                                            id={`filter-mobile-${section.id}-${optionIdx}`}
-                                            name={`${section.id}[]`}
-                                            defaultValue={option.value}
-                                            type="checkbox"
-                                            defaultChecked={option.checked}
-                                            className="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
-                                          />
-                                          <label
-                                            htmlFor={`filter-mobile-${section.id}-${optionIdx}`}
-                                            className="ml-3 min-w-0 flex-1 text-gray-500"
-                                          >
-                                            {option.label}
-                                          </label>
-                                        </div>
-                                      )
-                                    )}
+                            <h3 className="-mx-2 -my-3 flow-root">
+                              <Disclosure.Button className="px-2 py-3 bg-white w-full flex items-center justify-between text-gray-400 hover:text-gray-500">
+                                <span className="font-bold text-gray-900">
+                                  {section.name}
+                                </span>
+                                <span className="ml-6 flex items-center">
+                                  <ChevronDownIcon
+                                    className="h-5 w-5 ui-open:rotate-180 ui-open:transform"
+                                    aria-hidden="true"
+                                  />
+                                </span>
+                              </Disclosure.Button>
+                            </h3>
+                            <Disclosure.Panel className="pt-6">
+                              <div className="space-y-6">
+                                {section.options.map((option, optionIdx) => (
+                                  <div
+                                    key={optionIdx}
+                                    className="flex items-center"
+                                  >
+                                    <input
+                                      id={`filter-mobile-${section.id}-${optionIdx}`}
+                                      name="filter[]"
+                                      defaultValue={option.value.toString()}
+                                      type="checkbox"
+                                      onChange={() => formRef.current?.submit()}
+                                      defaultChecked={option.checked}
+                                      className="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
+                                    />
+                                    <label
+                                      htmlFor={`filter-mobile-${section.id}-${optionIdx}`}
+                                      className="ml-3 min-w-0 flex-1 text-gray-500"
+                                    >
+                                      {option.label}
+                                    </label>
                                   </div>
-                                </Disclosure.Panel>
-                              </>
-                            )}
+                                ))}
+                              </div>
+                            </Disclosure.Panel>
                           </Disclosure>
                         ))}
-                      </form>
+                      </Form>
                     </Dialog.Panel>
                   </Transition.Child>
                 </div>
@@ -245,8 +251,8 @@ export default function ProfilePage() {
           )}
           <main className="max-w-7xl mx-auto px-2 sm:px-4 py-10">
             <div className="relative z-10 flex items-baseline justify-between pb-6 sm:pb-0 border-b border-gray-200">
-              {/* Tabs - Web */}
-              <div className="flex items-center">
+              {/* Tabs */}
+              <div id="tabs" className="flex items-center">
                 {!hideFilter && (
                   <div className="hidden sm:flex items-center mr-8">
                     <button
@@ -285,7 +291,7 @@ export default function ProfilePage() {
                   ))}
                 </nav>
               </div>
-              {/* End of Tabs - Web */}
+              {/* End of Tabs */}
 
               {!hideFilter && (
                 <div className="flex items-center">
@@ -333,15 +339,20 @@ export default function ProfilePage() {
             <section className="pt-6 pb-24">
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-8 gap-y-10">
                 {/* Filters */}
-                {filters && filters.length > 0 && (
-                  <form
+                {filterOptions && filterOptions.length > 0 && (
+                  <Form
+                    reloadDocument
+                    action={`/${username}/collection#tabs`}
+                    ref={formRef}
+                    method="get"
                     className={`hidden ${webFiltersOpen ? "lg:block" : ""}`}
                   >
-                    {filters.map((section) => (
+                    {filterOptions.map((section) => (
                       <Disclosure
                         as="div"
                         key={section.id}
                         className="border-b border-gray-200 py-6"
+                        defaultOpen={section.defaultOpen}
                       >
                         {({ open }) => (
                           <>
@@ -376,9 +387,12 @@ export default function ProfilePage() {
                                       >
                                         <input
                                           id={`filter-${section.id}-${optionIdx}`}
-                                          name={`${section.id}[]`}
+                                          name="filter"
                                           defaultValue={option.value}
                                           type="checkbox"
+                                          onChange={() =>
+                                            formRef.current?.submit()
+                                          }
                                           defaultChecked={option.checked}
                                           className="h-4 w-4 border-gray-300 rounded text-primary focus:ring-primary-dark"
                                         />
@@ -396,9 +410,12 @@ export default function ProfilePage() {
                                     <div className="flex items-center">
                                       <input
                                         id={`filter-${section.id}`}
-                                        name={`${section.id}[]`}
-                                        defaultValue={section.options[0].value}
+                                        name="filter[]"
+                                        defaultValue={section.options[0].value.toString()}
                                         type="checkbox"
+                                        onChange={() =>
+                                          formRef.current?.submit()
+                                        }
                                         defaultChecked={
                                           section.options[0].checked
                                         }
@@ -420,7 +437,7 @@ export default function ProfilePage() {
                         )}
                       </Disclosure>
                     ))}
-                  </form>
+                  </Form>
                 )}
                 <div
                   className={webFiltersOpen ? "lg:col-span-4" : "lg:col-span-5"}

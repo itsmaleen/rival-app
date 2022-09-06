@@ -12,7 +12,7 @@ export function getCollectible(id: Collectible["id"]) {
   });
 }
 
-export function getAllCollectibles(ownerId: User["id"]) {
+export function getAllCollectiblesWithTags(ownerId: User["id"]) {
   return prisma.collectible.findMany({
     include: {
       tags: true,
