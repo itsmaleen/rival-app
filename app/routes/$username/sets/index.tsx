@@ -272,9 +272,9 @@ export default function SetsPage() {
                                       (ownedCard) =>
                                         ownedCard.name === card.name
                                     ) ? (
-                                      <div className="absolute left-0 h-full w-full bg-gray-300 opacity-50" />
+                                      <></>
                                     ) : (
-                                      <> </>
+                                      <div className="absolute left-0 h-full w-full bg-gray-300 opacity-50"></div>
                                     )}
                                     <div className="flex-shrink-0">
                                       <img
