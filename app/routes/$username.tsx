@@ -24,10 +24,7 @@ import { getCollectibleCounts } from "~/models/collectible.server";
 import { getUserByUsername } from "~/models/user.server";
 import { getUniqueTagsByCollector } from "~/models/tag.server";
 import { getExternalLinks } from "~/models/links.server";
-
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
+import { classNames } from "~/utils/helpers";
 
 export async function action({ request }: ActionArgs) {
   let formData = await request.formData();
@@ -49,7 +46,6 @@ export async function loader({ params, request }: LoaderArgs) {
   const links = await getExternalLinks(user.id);
 
   const url = new URL(request.url);
-  const inCollection = url.pathname.includes("/collection");
 
   const tags = url.searchParams.getAll("filter");
 
@@ -102,7 +98,6 @@ export async function loader({ params, request }: LoaderArgs) {
     allCollectiblesCount,
     featuredCollectiblesCount,
     links,
-    inCollection,
     filters,
   });
 }
@@ -112,23 +107,26 @@ type ViewOption = "GRID" | "CARD";
 export type FilterContextType = {
   setHideFilter: (hideFilter: boolean) => void;
   activeViewOption: ViewOption;
+  userId: number;
 };
 
 export default function ProfilePage() {
   const data = useLoaderData<typeof loader>();
   const location = useLocation();
 
-  console.log(location);
-
-  const { filterOptions, username, user, inCollection, filters } = data;
+  const { filterOptions, username, user, filters } = data;
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [webFiltersOpen, setWebFiltersOpen] = useState(
     filters && filters.length > 0
   );
-  const [hideFilter, setHideFilter] = useState(!inCollection);
+  const [hideFilter, setHideFilter] = useState(true);
   const [activeViewOption, setActiveViewOption] = useState<ViewOption>("GRID");
 
-  const context: FilterContextType = { setHideFilter, activeViewOption };
+  const context: FilterContextType = {
+    setHideFilter,
+    activeViewOption,
+    userId: user.id,
+  };
 
   const filterFormRef = useRef<HTMLFormElement>(null);
   const mobileNavFormRef = useRef<HTMLFormElement>(null);
@@ -143,6 +141,10 @@ export default function ProfilePage() {
       name: "Collection",
       href: `/${username}/collection`,
       count: data.allCollectiblesCount,
+    },
+    {
+      name: "Sets",
+      href: `/${username}/sets`,
     },
     // { name: "Wish List", href: "#", count: "4", current: false },
   ];
@@ -387,14 +389,19 @@ export default function ProfilePage() {
 
             <section className="pt-6 pb-24">
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-8 gap-y-10">
-                {/* Filters */}
+                {/* 
+                Filters 
+                TODO: maybe need to move filter shit to collections page somehow
+                */}
                 {filterOptions && filterOptions.length > 0 && (
                   <Form
                     reloadDocument
                     action={`/${username}/collection#tabs`}
                     ref={filterFormRef}
                     method="get"
-                    className={`hidden ${webFiltersOpen ? "lg:block" : ""}`}
+                    className={`hidden ${
+                      !hideFilter && webFiltersOpen ? "lg:block" : ""
+                    }`}
                   >
                     {filterOptions.map((section) => (
                       <Disclosure
@@ -489,7 +496,11 @@ export default function ProfilePage() {
                   </Form>
                 )}
                 <div
-                  className={webFiltersOpen ? "lg:col-span-4" : "lg:col-span-5"}
+                  className={
+                    !hideFilter && webFiltersOpen
+                      ? "lg:col-span-4"
+                      : "lg:col-span-5"
+                  }
                 >
                   <Outlet context={context} />
                 </div>
