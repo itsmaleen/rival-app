@@ -98,7 +98,12 @@ export default function SetsPage() {
                     <div className="relative">
                       <div
                         className="absolute h-6 rounded bg-primary-dark z-10 overflow-visible"
-                        style={{ width: "37.5%" }}
+                        style={{
+                          width: `${(
+                            (set.ownedCards.length / set.allCards.length) *
+                            100
+                          ).toFixed(2)}%`,
+                        }}
                       />
                       <span className="absolute pl-4 z-20">
                         {`${(
