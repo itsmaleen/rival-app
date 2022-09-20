@@ -3,7 +3,7 @@ import { json } from "@remix-run/node";
 import { useLoaderData, useOutletContext } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import Gallery from "~/components/gallery";
-import { getFeaturedCollectibles } from "~/models/collectible.server";
+import { getFeaturedCollectibles } from "~/models/collectible_user.server";
 import { getUserByUsername } from "~/models/user.server";
 import type { FilterContextType } from "../$username";
 

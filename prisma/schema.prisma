@@ -11,29 +11,60 @@ datasource db {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
-  email        String        @unique
+  id           Int               @id @default(autoincrement())
+  email        String            @unique
   name         String?
-  username     String        @unique
+  username     String            @unique
   description  String?
-  collectibles Collectible[]
-  createdAt    DateTime      @default(now())
+  collectibles CollectibleUser[]
+  createdAt    DateTime          @default(now())
   links        UserLink[]
   imageUrl     String?
+  SetUser      SetUser[]
 
   @@map("users")
+}
+
+model ThirdPartyCollectibleIdentifier {
+  id             Int         @id @default(autoincrement())
+  collectibleId  Int
+  thirdPartyId   String
+  thirdPartyName String
+  collectible    Collectible @relation(fields: [collectibleId], references: [id])
+
+  @@unique([thirdPartyId, thirdPartyName])
+  @@map("third_party_collectible_identifiers")
 }
 
 model Collectible {
   id          Int     @id @default(autoincrement())
   name        String
   imageUrl    String
+  description String?
+
+  tags Tag[]
+
+  createdAt                       DateTime                          @default(now())
+  CollectibleUser                 CollectibleUser[]
+  ThirdPartyCollectibleIdentifier ThirdPartyCollectibleIdentifier[]
+  CollectibleSet                  CollectibleSet[]
+
+  @@map("collectibles")
+}
+
+model CollectibleUser {
+  id          Int     @id @default(autoincrement())
+  name        String
+  imageUrl    String
   grade       String?
   description String?
   condition   String?
-  quantity    Int     @default(1)
   wishlist    Boolean @default(false)
   featured    Boolean @default(false)
+  verified    Boolean @default(false)
+
+  collectible   Collectible @relation(fields: [collectibleId], references: [id])
+  collectibleId Int
 
   owner   User @relation(fields: [ownerId], references: [id])
   ownerId Int
@@ -44,7 +75,7 @@ model Collectible {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
-  @@map("collectibles")
+  @@map("collectible_user")
 }
 
 model Tag {
@@ -53,8 +84,11 @@ model Tag {
   category   Category @relation(fields: [categoryId], references: [id])
   categoryId Int
 
-  collectible   Collectible @relation(fields: [collectibleId], references: [id])
-  collectibleId Int
+  collectible   Collectible? @relation(fields: [collectibleId], references: [id])
+  collectibleId Int?
+
+  collectibleUser   CollectibleUser? @relation(fields: [collectibleUserId], references: [id])
+  collectibleUserId Int?
 
   @@map("tags")
 }
@@ -64,17 +98,18 @@ model Image {
   url      String
   priority Int
 
-  collectible   Collectible @relation(fields: [collectibleId], references: [id])
+  collectible   CollectibleUser @relation(fields: [collectibleId], references: [id])
   collectibleId Int
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime        @default(now())
 
   @@unique([collectibleId, priority])
   @@map("images")
 }
 
 model Category {
-  id   Int    @id @default(autoincrement())
-  name String
+  id     Int     @id @default(autoincrement())
+  name   String
+  public Boolean @default(true)
 
   Tag Tag[]
 
@@ -89,4 +124,43 @@ model UserLink {
   userId Int
 
   @@map("user_links")
+}
+
+model Set {
+  id             Int              @id @default(autoincrement())
+  name           String
+  description    String?
+  imageUrl       String?
+  createdAt      DateTime         @default(now())
+  SetUser        SetUser[]
+  CollectibleSet CollectibleSet[]
+
+  @@map("sets")
+}
+
+model CollectibleSet {
+  id            Int         @id @default(autoincrement())
+  collectible   Collectible @relation(fields: [collectibleId], references: [id])
+  collectibleId Int
+  set           Set         @relation(fields: [setId], references: [id])
+  setId         Int
+  createdAt     DateTime    @default(now())
+
+  @@map("collectible_set")
+}
+
+model SetUser {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+
+  set   Set @relation(fields: [setId], references: [id])
+  setId Int
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  @@map("set_user")
 }

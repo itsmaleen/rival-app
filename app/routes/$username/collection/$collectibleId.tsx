@@ -3,7 +3,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import type { LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import invariant from "tiny-invariant";
-import { getCollectible } from "~/models/collectible.server";
+import { getCollectible } from "~/models/collectible_user.server";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 // TODO: Look into reducing bundle size
