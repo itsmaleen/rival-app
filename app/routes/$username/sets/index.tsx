@@ -43,7 +43,7 @@ export async function loader({ params }: LoaderArgs) {
   });
 }
 
-export default function Test() {
+export default function SetsPage() {
   const data = useLoaderData<typeof loader>();
   const { setHideFilter } = useOutletContext<FilterContextType>();
   setHideFilter(true);
@@ -137,11 +137,15 @@ export default function Test() {
                   <div>
                     <div className="mt-3 text-center sm:mt-5">
                       <Dialog.Title
-                        as="h3"
-                        className="text-lg font-medium leading-6 text-gray-900"
-                      >
-                        {activeSet}
-                      </Dialog.Title>
+                        as="img"
+                        className="text-gray-900 mx-auto mb-2"
+                        alt={activeSet}
+                        src={
+                          data.sets.find((set) => set.name === activeSet)
+                            ?.imageUrl ||
+                          "https://assets.pokemon.com/assets/cms2/img/misc/gus/buttons/logo-pokemon-79x45.png"
+                        }
+                      />
                       <div id="tabs" className="hidden sm:flex items-center">
                         <nav
                           className="-mb-px flex space-x-8"
@@ -232,7 +236,7 @@ export default function Test() {
                               ) {
                                 return (
                                   <div
-                                    key={collectible.id}
+                                    key={`${collectible.setId}-${collectible.collectibleId}`}
                                     className="relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400"
                                   >
                                     <div className="flex-shrink-0">
@@ -270,7 +274,7 @@ export default function Test() {
                               ) {
                                 return (
                                   <div
-                                    key={collectible.id}
+                                    key={`${collectible.setId}-${collectible.collectibleId}`}
                                     className="relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400"
                                   >
                                     <div className="flex-shrink-0">
@@ -296,7 +300,7 @@ export default function Test() {
                               } else if (activeTab === "Total Set") {
                                 return (
                                   <div
-                                    key={collectible.id}
+                                    key={`${collectible.setId}-${collectible.collectibleId}`}
                                     className="relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400"
                                   >
                                     <div className="flex-shrink-0">
