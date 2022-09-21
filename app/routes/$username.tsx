@@ -20,7 +20,7 @@ import {
 } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import Profile from "~/components/profile";
-import { getCollectibleCounts } from "~/models/collectible.server";
+import { getCollectibleCounts } from "~/models/collectible_user.server";
 import { getUserByUsername } from "~/models/user.server";
 import { getUniqueTagsByCollector } from "~/models/tag.server";
 import { getExternalLinks } from "~/models/links.server";

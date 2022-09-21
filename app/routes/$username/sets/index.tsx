@@ -1,22 +1,20 @@
 import { Dialog, Transition } from "@headlessui/react";
-import type { Collectible, Tag } from "@prisma/client";
+import type { Collectible, CollectibleSet } from "@prisma/client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useOutletContext } from "@remix-run/react";
 import { Fragment, useState } from "react";
 import invariant from "tiny-invariant";
-import type { PokemonCard } from "~/models/set.server";
-import { getCardsFromPokemonSetName } from "~/models/set.server";
 import {
-  getCollectibleFromUserBySetName,
-  getUniqueTagsFromUserSetName,
-} from "~/models/tag.server";
+  getCollectiblesFromSet,
+  getOwnedCardsInSet,
+  getSetsOwned,
+} from "~/models/set.server";
 import { getUserByUsername } from "~/models/user.server";
 import type { FilterContextType } from "~/routes/$username";
 import { classNames } from "~/utils/helpers";
 
 export async function loader({ params }: LoaderArgs) {
-  // TODO: someone get userid from outlet context
   invariant(params.username, "username is required");
 
   const username = params.username;
@@ -25,37 +23,27 @@ export async function loader({ params }: LoaderArgs) {
   if (!user) {
     throw new Error(`User ${username} not found`);
   }
-  const setsCollected = await getUniqueTagsFromUserSetName(user.id);
+  const collectiblesFromSet = await getCollectiblesFromSet("Astral Radiance");
+  const sets = await getSetsOwned(user.id);
 
-  // match the setsCollected with set names using getCardsFromPokemonSetName
-  type SetWithCards = {
-    name: string;
-    allCards: PokemonCard[];
-    ownedCards: (Collectible & { tags: Tag[] })[];
-    missingCards: PokemonCard[];
-  };
-  const setsWithCards: SetWithCards[] = [];
-
-  for (const set of setsCollected) {
-    const ownedCards = await getCollectibleFromUserBySetName(
-      user.id,
-      set.tag.toString()
-    );
-    const allCards = await getCardsFromPokemonSetName(set.tag.toString());
-    setsWithCards.push({
-      name: set.tag.toString(),
-      allCards,
-      ownedCards,
-      missingCards: [],
-    });
+  let collectiblesInSets: {
+    [key: string]: (CollectibleSet & { collectible: Collectible })[];
+  } = {};
+  for (const set of sets) {
+    collectiblesInSets[set.name] = await getCollectiblesFromSet(set.name);
   }
 
+  const ownedCollectiblesInSet = await getOwnedCardsInSet(user.id);
+
   return json({
-    setsWithCards,
+    collectiblesFromSet,
+    sets,
+    collectiblesInSets,
+    ownedCollectiblesInSet,
   });
 }
 
-export default function SetsPage() {
+export default function Test() {
   const data = useLoaderData<typeof loader>();
   const { setHideFilter } = useOutletContext<FilterContextType>();
   setHideFilter(true);
@@ -65,63 +53,61 @@ export default function SetsPage() {
 
   return (
     <>
-      <div>
-        <h2 className="text-lg font-semibold">
-          {data.setsWithCards.length > 0
-            ? "Active Sets"
-            : "Not measuring set collection yet"}
-        </h2>
-        {/* Set stats */}
-        {data.setsWithCards.map(
-          (set) =>
-            set &&
-            set.allCards &&
-            set.allCards.length > 0 && (
-              <div
-                key={set.name}
-                className="flex flex-col mt-4 rounder border-2 border-gray-100 p-6 hover:border-gray-200"
-                onClick={() => {
-                  setActiveSet(set.name);
-                  setOpen(true);
-                }}
-              >
-                <div className="flex flex-row">
-                  <h3 className="font-bold">
-                    Pokemon {/* Add set series here */}
-                  </h3>
-                  <span className="font-bold mx-2">•</span>
-                  <span>{set.name}</span>
-                </div>
+      {data.sets.map(
+        (set) =>
+          set && (
+            <div
+              key={set.name}
+              className="flex flex-col mt-4 rounder border-2 border-gray-100 p-6 hover:border-gray-200"
+              onClick={() => {
+                setActiveSet(set.name);
+                setOpen(true);
+              }}
+            >
+              <div className="flex flex-row">
+                <h3 className="font-bold">
+                  Pokemon {/* Add set series here */}
+                </h3>
+                <span className="font-bold mx-2">•</span>
+                <span>{set.name}</span>
+              </div>
 
-                <div className="flex flex-row mt-2">
-                  <div className="bg-gray-200 h-6 flex-grow rounded">
-                    <div className="relative">
-                      <div
-                        className="absolute h-6 rounded bg-primary-dark z-10 overflow-visible"
-                        style={{
-                          width: `${(
-                            (set.ownedCards.length / set.allCards.length) *
-                            100
-                          ).toFixed(2)}%`,
-                        }}
-                      />
-                      <span className="absolute pl-4 z-20">
-                        {`${(
-                          (set.ownedCards.length / set.allCards.length) *
-                          100
-                        ).toFixed(2)}%`}{" "}
-                        Complete
-                      </span>
-                    </div>
+              <div className="flex flex-row mt-2">
+                <div className="bg-gray-200 h-6 flex-grow rounded">
+                  <div className="relative">
+                    <div
+                      className="absolute h-6 rounded bg-primary-dark z-10 overflow-visible"
+                      style={{
+                        width: `${(
+                          data.ownedCollectiblesInSet.filter(
+                            (ownedSet) => ownedSet.setId === set.id
+                          ).length / data.collectiblesInSets[set.name].length
+                        ).toFixed(2)}%`,
+                      }}
+                    />
+                    <span className="absolute pl-4 z-20">
+                      {`${(
+                        data.ownedCollectiblesInSet.filter(
+                          (ownedSet) => ownedSet.setId === set.id
+                        ).length / data.collectiblesInSets[set.name].length
+                      ).toFixed(2)}%`}{" "}
+                      Complete
+                    </span>
                   </div>
-                  <div className="text-gray-500 ml-4">
-                    {set.ownedCards.length} / {set.allCards.length} Cards
-                  </div>
+                </div>
+                <div className="text-gray-500 ml-4">
+                  {
+                    data.ownedCollectiblesInSet.filter(
+                      (ownedSet) => ownedSet.setId === set.id
+                    ).length
+                  }{" "}
+                  / {data.collectiblesInSets[set.name].length} Cards
                 </div>
               </div>
-            )
-        )}
-      </div>
+            </div>
+          )
+      )}
+
       <Transition.Root show={open} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={setOpen}>
           <Transition.Child
@@ -174,9 +160,15 @@ export default function SetsPage() {
 
                             <span className="inline-block">
                               <span className="px-2">•</span>
-                              {data.setsWithCards
-                                .filter((set) => set.name === activeSet)
-                                .map((set) => set.ownedCards.length)}
+                              {
+                                data.ownedCollectiblesInSet.filter(
+                                  (ownedSet) =>
+                                    ownedSet.setId ===
+                                    data.sets.find(
+                                      (set) => set.name === activeSet
+                                    )?.id
+                                ).length
+                              }
                             </span>
                           </div>
                           <div
@@ -190,12 +182,18 @@ export default function SetsPage() {
                           >
                             {"Missing"}
 
-                            {/* <span className="inline-block">
+                            <span className="inline-block">
                               <span className="px-2">•</span>
-                              {data.setsWithCards
-                                .filter((set) => set.name === activeSet)
-                                .map((set) => set.missingCards.length)}
-                            </span> */}
+
+                              {data.collectiblesInSets[activeSet]?.length -
+                                data.ownedCollectiblesInSet.filter(
+                                  (ownedSet) =>
+                                    ownedSet.setId ===
+                                    data.sets.find(
+                                      (set) => set.name === activeSet
+                                    )?.id
+                                ).length}
+                            </span>
                           </div>
                           <div
                             className={classNames(
@@ -210,35 +208,38 @@ export default function SetsPage() {
 
                             <span className="inline-block">
                               <span className="px-2">•</span>
-                              {data.setsWithCards
-                                .filter((set) => set.name === activeSet)
-                                .map((set) => set.allCards.length)}
+                              {data.collectiblesInSets[activeSet]?.length}
                             </span>
                           </div>
                         </nav>
                       </div>
                       <div className="mt-2">
-                        <div
-                          className={
-                            activeTab === "Collected"
-                              ? "grid grid-cols-2 gap-4"
-                              : "hidden"
-                          }
-                        >
-                          {data.setsWithCards
-                            .filter((set) => set.name === activeSet)
-                            .map((set) => {
-                              return set.ownedCards.map((card) => {
+                        <div className="grid grid-cols-2 gap-4">
+                          {data.collectiblesInSets[activeSet]?.map(
+                            (collectible) => {
+                              if (
+                                activeTab === "Collected" &&
+                                data.ownedCollectiblesInSet
+                                  .filter(
+                                    (ownedSet) =>
+                                      ownedSet.setId ===
+                                      data.sets.find(
+                                        (set) => set.name === activeSet
+                                      )?.id
+                                  )
+                                  .map((ownedSet) => ownedSet.collectibleId)
+                                  .includes(collectible.collectibleId)
+                              ) {
                                 return (
                                   <div
-                                    key={card.id}
+                                    key={collectible.id}
                                     className="relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400"
                                   >
                                     <div className="flex-shrink-0">
                                       <img
+                                        src={collectible.collectible.imageUrl}
+                                        alt={collectible.collectible.name}
                                         className="h-12 rounded-sm"
-                                        src={card.imageUrl}
-                                        alt=""
                                       />
                                     </div>
                                     <div className="min-w-0 flex-1">
@@ -248,44 +249,35 @@ export default function SetsPage() {
                                           aria-hidden="true"
                                         />
                                         <p className="text-sm font-medium text-gray-900">
-                                          {card.name}
+                                          {collectible.collectible.name}
                                         </p>
                                       </div>
                                     </div>
                                   </div>
                                 );
-                              });
-                            })}
-                        </div>
-                        <div
-                          className={
-                            activeTab === "Total Set"
-                              ? "grid grid-cols-2 gap-4"
-                              : "hidden"
-                          }
-                        >
-                          {data.setsWithCards
-                            .filter((set) => set.name === activeSet)
-                            .map((set) => {
-                              return set.allCards.map((card) => {
+                              } else if (
+                                activeTab === "Missing" &&
+                                !data.ownedCollectiblesInSet
+                                  .filter(
+                                    (ownedSet) =>
+                                      ownedSet.setId ===
+                                      data.sets.find(
+                                        (set) => set.name === activeSet
+                                      )?.id
+                                  )
+                                  .map((ownedSet) => ownedSet.collectibleId)
+                                  .includes(collectible.collectibleId)
+                              ) {
                                 return (
                                   <div
-                                    key={card.id}
+                                    key={collectible.id}
                                     className="relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400"
                                   >
-                                    {set.ownedCards.some(
-                                      (ownedCard) =>
-                                        ownedCard.name === card.name
-                                    ) ? (
-                                      <></>
-                                    ) : (
-                                      <div className="absolute left-0 h-full w-full bg-gray-300 opacity-50"></div>
-                                    )}
                                     <div className="flex-shrink-0">
                                       <img
+                                        src={collectible.collectible.imageUrl}
+                                        alt={collectible.collectible.name}
                                         className="h-12 rounded-sm"
-                                        src={card.images.small}
-                                        alt=""
                                       />
                                     </div>
                                     <div className="min-w-0 flex-1">
@@ -295,14 +287,43 @@ export default function SetsPage() {
                                           aria-hidden="true"
                                         />
                                         <p className="text-sm font-medium text-gray-900">
-                                          {card.name}
+                                          {collectible.collectible.name}
                                         </p>
                                       </div>
                                     </div>
                                   </div>
                                 );
-                              });
-                            })}
+                              } else if (activeTab === "Total Set") {
+                                return (
+                                  <div
+                                    key={collectible.id}
+                                    className="relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 hover:border-gray-400"
+                                  >
+                                    <div className="flex-shrink-0">
+                                      <img
+                                        src={collectible.collectible.imageUrl}
+                                        alt={collectible.collectible.name}
+                                        className="h-12 rounded-sm"
+                                      />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <div>
+                                        <span
+                                          className="absolute inset-0"
+                                          aria-hidden="true"
+                                        />
+                                        <p className="text-sm font-medium text-gray-900">
+                                          {collectible.collectible.name}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              } else {
+                                return <></>;
+                              }
+                            }
+                          )}
                         </div>
                       </div>
                     </div>

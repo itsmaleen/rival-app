@@ -3,8 +3,8 @@ import { json } from "@remix-run/node";
 import { Link, useLoaderData, useOutletContext } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import Card from "~/components/card";
-import type { Collectible } from "~/models/collectible.server";
-import { getAllCollectiblesWithTags } from "~/models/collectible.server";
+import type { CollectibleUser } from "~/models/collectible_user.server";
+import { getAllCollectiblesWithTags } from "~/models/collectible_user.server";
 import type { Tag } from "~/models/tag.server";
 import { getUserByUsername } from "~/models/user.server";
 import type { FilterContextType } from "../../$username";
@@ -22,7 +22,7 @@ export async function loader({ params, request }: LoaderArgs) {
   const url = new URL(request.url);
   const tags = url.searchParams.getAll("filter");
 
-  let collectibles: (Collectible & { tags: Tag[] })[];
+  let collectibles: (CollectibleUser & { tags: Tag[] })[];
   const allCollectibles = await getAllCollectiblesWithTags(user.id);
 
   if (tags && tags.length > 0) {

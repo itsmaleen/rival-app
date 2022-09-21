@@ -25,26 +25,28 @@ export async function getTagsByCollectibleId(collectibleId: Collectible["id"]) {
 
 export async function getUniqueTagsByCollector(ownerId: User["id"]) {
   return prisma.$queryRaw<TagCategory[]>`SELECT 
-  distinct t.name as tag, c.name as category from collectibles 
-  inner join tags t on collectibles.id = t."collectibleId" 
-  inner join categories c on c.id = t."categoryId" 
+  distinct t.name as tag, c.name as category from collectible_user
+  inner join collectibles on collectible_user."collectibleId" = collectibles.id
+  inner join tags t on collectible_user.id = t."collectibleUserId" or collectibles.id = t."collectibleId"
+  inner join categories c on c.id = t."categoryId"
   where "ownerId" = ${ownerId}`;
 }
 
 export async function getUniqueTagsFromUserSetName(ownerId: User["id"]) {
   return prisma.$queryRaw<TagCategory[]>`SELECT 
-  distinct t.name as tag, c.name as category from collectibles 
-  inner join tags t on collectibles.id = t."collectibleId" 
-  inner join categories c on c.id = t."categoryId" 
+  distinct t.name as tag, c.name as category from collectible_user
+  inner join collectibles on collectible_user."collectibleId" = collectibles.id
+  inner join tags t on collectible_user.id = t."collectibleUserId" or collectibles.id = t."collectibleId"
+  inner join categories c on c.id = t."categoryId"
   where "ownerId" = ${ownerId} and c.id = ${SET_NAME_CATEGORY}`;
 }
 
-// TODO: Move to collectibles model
+// TODO: Move to collectibles model and FIX IT to use collectible_user
 export async function getCollectibleFromUserBySetName(
   ownerId: User["id"],
   setName: string
 ) {
-  return prisma.collectible.findMany({
+  return prisma.collectibleUser.findMany({
     include: {
       tags: true,
     },
