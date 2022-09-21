@@ -79,17 +79,21 @@ export default function SetsPage() {
                       className="absolute h-6 rounded bg-primary-dark z-10 overflow-visible"
                       style={{
                         width: `${(
-                          data.ownedCollectiblesInSet.filter(
+                          (data.ownedCollectiblesInSet.filter(
                             (ownedSet) => ownedSet.setId === set.id
-                          ).length / data.collectiblesInSets[set.name].length
+                          ).length /
+                            data.collectiblesInSets[set.name].length) *
+                          100
                         ).toFixed(2)}%`,
                       }}
                     />
                     <span className="absolute pl-4 z-20">
                       {`${(
-                        data.ownedCollectiblesInSet.filter(
+                        (data.ownedCollectiblesInSet.filter(
                           (ownedSet) => ownedSet.setId === set.id
-                        ).length / data.collectiblesInSets[set.name].length
+                        ).length /
+                          data.collectiblesInSets[set.name].length) *
+                        100
                       ).toFixed(2)}%`}{" "}
                       Complete
                     </span>
