@@ -1,10 +1,58 @@
+import { Form, useActionData, useTransition } from "@remix-run/react";
+import type { ActionArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import supabaseToken from "~/utils/cookie";
+import { signInUser } from "~/utils/auth";
+
+export async function action({ request }: ActionArgs) {
+  const errors = {};
+  try {
+    const form = await request.formData();
+    const email = form.get("email");
+    const password = form.get("password");
+    // validate the fields
+    if (typeof email !== "string" || !email.match(/^\S+@\S+$/)) {
+      errors.email = "Email address is invalid";
+    }
+    if (typeof password !== "string" || password.length < 6) {
+      errors.password = "Password must be > 6 characters";
+    }
+    // return data if we have errors
+    if (Object.keys(errors).length) {
+      return json(errors, { status: 422 });
+    }
+    // otherwise create the user and redirect
+    const { data, error } = await signInUser({
+      email,
+      password,
+    });
+    if (data) {
+      return redirect("/", {
+        headers: {
+          "Set-Cookie": await supabaseToken.serialize(data.access_token, {
+            expires: new Date(data?.expires_at),
+            maxAge: data.expires_in,
+          }),
+        },
+      });
+    }
+    throw error;
+  } catch (error) {
+    console.log("error", error);
+    errors.server = error?.message || error;
+    return json(errors, { status: 500 });
+  }
+}
+
 export default function Login() {
+  const errors = useActionData();
+  const transition = useTransition();
   return (
     <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <form className="space-y-6" action="#" method="POST">
+            <Form className="space-y-6" action="#" method="post">
               <div>
                 <label
                   htmlFor="email"
@@ -21,6 +69,11 @@ export default function Login() {
                     required
                     className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-primary-dark focus:outline-none focus:ring-primary-dark sm:text-sm"
                   />
+                  {errors?.email ? (
+                    <p className="text-red-500 text-xs italic">
+                      {errors.email}
+                    </p>
+                  ) : null}
                 </div>
               </div>
 
@@ -41,6 +94,11 @@ export default function Login() {
                     className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-primary-dark focus:outline-none focus:ring-primary-dark sm:text-sm"
                   />
                 </div>
+                {errors?.password ? (
+                  <p className="text-red-500 text-xs italic">
+                    {errors.password}
+                  </p>
+                ) : null}
               </div>
 
               <div className="flex items-center justify-between">
@@ -58,11 +116,15 @@ export default function Login() {
                 <button
                   type="submit"
                   className="flex w-full justify-center rounded border border-transparent bg-black py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2"
+                  disabled={transition.state !== "idle"}
                 >
-                  Sign in
+                  {transition.state !== "idle" ? "Loading..." : "Sign in"}
                 </button>
+                {errors?.server ? (
+                  <p className="text-red-500 text-xs italic">{errors.server}</p>
+                ) : null}
               </div>
-            </form>
+            </Form>
           </div>
         </div>
       </div>
