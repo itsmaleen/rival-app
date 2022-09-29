@@ -13,13 +13,11 @@ import {
 import { useEffect } from "react";
 import Navbar from "~/components/navbar";
 import styles from "./styles/app.css";
-import { isAuthenticated } from "./utils/auth";
-import { supabase } from "./supabase.server";
 
 import * as gtag from "./utils/gtag.client";
-// import { UserProvider } from "./components/UserProvider";
 import { UserContextProvider } from "./useUser";
-// import { UserProvider } from "@supabase/auth-helpers-react";
+import { createClient } from "@supabase/supabase-js";
+import { getLoggedInUser } from "./sessions.server";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -31,30 +29,31 @@ export function links() {
   return [{ rel: "stylesheet", href: styles }];
 }
 
-interface RootLoader {
-  ENV: { [key: string]: string };
-}
-
 export const loader: LoaderFunction = async ({ request }: LoaderArgs) => {
-  const ENV = {
-    SUPABASE_URL: process.env.SUPABASE_URL,
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
-  };
+  const user = await getLoggedInUser(request);
+
   const isMobileView: RegExpMatchArray | null = (
     request ? request.headers?.get("user-agent") : navigator?.userAgent
   ).match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i);
 
   //Returning the isMobileView as a prop to the component for further use.
   return json({
-    ENV,
+    supabaseKey: process.env.SUPABASE_ANON_KEY,
+    supabaseUrl: process.env.SUPABASE_URL,
     isMobileView: Boolean(isMobileView),
     gaTrackingId: process.env.GA_TRACKING_ID,
+    user,
   });
 };
 
 export default function App() {
-  const { isMobileView, gaTrackingId, ENV } = useLoaderData();
+  const { isMobileView, gaTrackingId, supabaseKey, supabaseUrl, user } =
+    useLoaderData();
   const location = useLocation();
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  console.log("user", user);
 
   useEffect(() => {
     if (gaTrackingId?.length) {
@@ -91,9 +90,7 @@ export default function App() {
             />
           </>
         )}
-        <UserContextProvider
-        //  supabaseClient={supabase} callbackUrl="/auth"
-        >
+        <UserContextProvider supabase={supabase}>
           <>
             <Navbar isMobileView={isMobileView} />
             <Outlet />
@@ -102,22 +99,7 @@ export default function App() {
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
-
-        <EnvironmentSetter env={ENV} />
       </body>
     </html>
-  );
-}
-
-/**
- This component loads environment variables into window.ENV 
- */
-function EnvironmentSetter({ env }: { env: { [key: string]: string } }) {
-  return (
-    <script
-      dangerouslySetInnerHTML={{
-        __html: `window.ENV = ${JSON.stringify(env)}`,
-      }}
-    />
   );
 }

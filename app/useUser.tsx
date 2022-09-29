@@ -1,8 +1,9 @@
 import type { AuthChangeEvent, Session, User } from "@supabase/supabase-js";
 import type { ReactChild } from "react";
+import React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useFetcher } from "@remix-run/react";
-import { supabase } from "~/supabase";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 type UserContextType = {
   user: User | null;
@@ -15,7 +16,10 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
  * This context provides user/session details.
  * It handles auth state changes and sets a cookie for server-side rendering (SSR) when session changes.
  */
-export const UserContextProvider = ({ children }: { children: ReactChild }) => {
+export const UserContextProvider: React.FC<{
+  children: ReactChild;
+  supabase: SupabaseClient;
+}> = ({ children, supabase }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const fetcher = useFetcher();

@@ -18,6 +18,7 @@ export const setAuth = (token: string): Session => {
   return supabase.auth.setAuth(token);
 };
 
+// TODO: REMOVE THIS
 const getToken = async (request: Request) => {
   const cookieHeader = request.headers.get("Cookie");
   return await supabaseToken.parse(cookieHeader);
@@ -50,11 +51,4 @@ export const getUserData = async (userId: Number) => {
     .single();
   return { data, error };
 };
-
-export const getSession = async () => {
-  return await supabase.auth.session();
-};
-
-export const onAuthStateChange = async (callback: Function) => {
-  supabase.auth.onAuthStateChange(callback(event, session));
-};
+// TODO: REMOVE THIS ^

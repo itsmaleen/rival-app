@@ -1,7 +1,6 @@
-import { Form, Link, useActionData, useTransition } from "@remix-run/react";
+import { Form, useActionData, useTransition } from "@remix-run/react";
 import type { ActionArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
-import supabaseToken from "~/utils/cookie";
+import { json } from "@remix-run/node";
 import { signInUser } from "~/utils/auth";
 
 export async function action({ request }: ActionArgs) {
@@ -24,14 +23,6 @@ export async function action({ request }: ActionArgs) {
     });
     if (data) {
       console.log(data);
-      return redirect("/", {
-        headers: {
-          "Set-Cookie": await supabaseToken.serialize(data.access_token, {
-            expires: new Date(data?.expires_at),
-            maxAge: data.expires_in,
-          }),
-        },
-      });
     }
     throw error;
   } catch (error) {
