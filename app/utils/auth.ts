@@ -1,38 +1,21 @@
-import type { UserCredentials } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
 import { supabase } from "~/supabase.server";
 import supabaseToken from "~/utils/cookie";
 
-// export const createUser = async (data: {
-//   email: string;
-//   password: string;
-//   firstName: string;
-//   lastName: string;
-//   phoneNumber: string;
-// }) => {
-//   const { user, error } = await supabase.auth.signUp({
-//     email: data?.email,
-//     password: data?.password,
-//   });
-//   const createUser = await supabase.from("users").upsert({
-//     id: user?.id,
-//     first_name: data?.firstName,
-//     last_name: data?.lastName,
-//     phone_number: data?.phoneNumber,
-//   });
-//   return { user: createUser, error };
-// };
-
 type LoginData = {
   email: string;
-  password: string;
+  // password: string;
 };
 
-export const signInUser = async ({ email, password }: LoginData) => {
+export const signInUser = async ({ email }: LoginData) => {
   const { data, error } = await supabase.auth.signIn({
     email,
-    password,
   });
   return { data, error };
+};
+
+export const setAuth = (token: string): Session => {
+  return supabase.auth.setAuth(token);
 };
 
 const getToken = async (request: Request) => {
@@ -66,4 +49,12 @@ export const getUserData = async (userId: Number) => {
     .eq("id", userId)
     .single();
   return { data, error };
+};
+
+export const getSession = async () => {
+  return await supabase.auth.session();
+};
+
+export const onAuthStateChange = async (callback: Function) => {
+  supabase.auth.onAuthStateChange(callback(event, session));
 };

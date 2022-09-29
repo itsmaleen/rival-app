@@ -13,12 +13,13 @@ import {
 import { useEffect } from "react";
 import Navbar from "~/components/navbar";
 import styles from "./styles/app.css";
+import { isAuthenticated } from "./utils/auth";
+import { supabase } from "./supabase.server";
 
 import * as gtag from "./utils/gtag.client";
-
-type LoaderData = {
-  gaTrackingId: string | undefined;
-};
+// import { UserProvider } from "./components/UserProvider";
+import { UserContextProvider } from "./useUser";
+// import { UserProvider } from "@supabase/auth-helpers-react";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -30,20 +31,29 @@ export function links() {
   return [{ rel: "stylesheet", href: styles }];
 }
 
+interface RootLoader {
+  ENV: { [key: string]: string };
+}
+
 export const loader: LoaderFunction = async ({ request }: LoaderArgs) => {
-  const isMobileView = (
-    request ? request.headers.get("user-agent") : navigator.userAgent
+  const ENV = {
+    SUPABASE_URL: process.env.SUPABASE_URL,
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+  };
+  const isMobileView: RegExpMatchArray | null = (
+    request ? request.headers?.get("user-agent") : navigator?.userAgent
   ).match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i);
 
   //Returning the isMobileView as a prop to the component for further use.
   return json({
+    ENV,
     isMobileView: Boolean(isMobileView),
     gaTrackingId: process.env.GA_TRACKING_ID,
   });
 };
 
 export default function App() {
-  const { isMobileView, gaTrackingId } = useLoaderData();
+  const { isMobileView, gaTrackingId, ENV } = useLoaderData();
   const location = useLocation();
 
   useEffect(() => {
@@ -81,12 +91,33 @@ export default function App() {
             />
           </>
         )}
-        <Navbar isMobileView={isMobileView} />
-        <Outlet />
+        <UserContextProvider
+        //  supabaseClient={supabase} callbackUrl="/auth"
+        >
+          <>
+            <Navbar isMobileView={isMobileView} />
+            <Outlet />
+          </>
+        </UserContextProvider>
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
+
+        <EnvironmentSetter env={ENV} />
       </body>
     </html>
+  );
+}
+
+/**
+ This component loads environment variables into window.ENV 
+ */
+function EnvironmentSetter({ env }: { env: { [key: string]: string } }) {
+  return (
+    <script
+      dangerouslySetInnerHTML={{
+        __html: `window.ENV = ${JSON.stringify(env)}`,
+      }}
+    />
   );
 }

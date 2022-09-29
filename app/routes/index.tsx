@@ -1,6 +1,8 @@
+import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { getUsersWithCollectiblesCount } from "~/models/user.server";
+import { getLoggedInUser } from "~/sessions.server";
 
 const colors = [
   "#B0AC93",
@@ -11,15 +13,18 @@ const colors = [
   "#367AFF",
 ];
 
-export async function loader() {
+export async function loader({ request }: LoaderArgs) {
+  const user = await getLoggedInUser(request);
   const users = await getUsersWithCollectiblesCount();
 
-  return json({ users });
+  return json({ user, users });
 }
 
 export default function Index() {
   const data = useLoaderData<typeof loader>();
-  const { users } = data;
+  const { users, user } = data;
+  console.log("user", user);
+  console.log("a");
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl py-16">

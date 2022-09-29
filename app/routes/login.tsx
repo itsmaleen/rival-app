@@ -1,4 +1,4 @@
-import { Form, useActionData, useTransition } from "@remix-run/react";
+import { Form, Link, useActionData, useTransition } from "@remix-run/react";
 import type { ActionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import supabaseToken from "~/utils/cookie";
@@ -14,9 +14,6 @@ export async function action({ request }: ActionArgs) {
     if (typeof email !== "string" || !email.match(/^\S+@\S+$/)) {
       errors.email = "Email address is invalid";
     }
-    if (typeof password !== "string" || password.length < 6) {
-      errors.password = "Password must be > 6 characters";
-    }
     // return data if we have errors
     if (Object.keys(errors).length) {
       return json(errors, { status: 422 });
@@ -24,9 +21,9 @@ export async function action({ request }: ActionArgs) {
     // otherwise create the user and redirect
     const { data, error } = await signInUser({
       email,
-      password,
     });
     if (data) {
+      console.log(data);
       return redirect("/", {
         headers: {
           "Set-Cookie": await supabaseToken.serialize(data.access_token, {
@@ -78,47 +75,14 @@ export default function Login() {
               </div>
 
               <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Password
-                </label>
-                <div className="mt-1">
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-primary-dark focus:outline-none focus:ring-primary-dark sm:text-sm"
-                  />
-                </div>
-                {errors?.password ? (
-                  <p className="text-red-500 text-xs italic">
-                    {errors.password}
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="text-sm">
-                  <a
-                    href="#"
-                    className="font-medium text-black hover:text-primary-dark"
-                  >
-                    Forgot your password?
-                  </a>
-                </div>
-              </div>
-
-              <div>
                 <button
                   type="submit"
                   className="flex w-full justify-center rounded border border-transparent bg-black py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark focus:ring-offset-2"
                   disabled={transition.state !== "idle"}
                 >
-                  {transition.state !== "idle" ? "Loading..." : "Sign in"}
+                  {transition.state !== "idle"
+                    ? "Loading..."
+                    : "Continue with Email"}
                 </button>
                 {errors?.server ? (
                   <p className="text-red-500 text-xs italic">{errors.server}</p>
