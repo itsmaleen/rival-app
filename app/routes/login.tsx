@@ -18,17 +18,18 @@ export async function action({ request }: ActionArgs) {
       throw error;
     }
     console.log(user);
+    return json({ success: true });
   } catch (error) {
     console.log("error", error);
     errors.server = error?.message || error;
     return json(errors, { status: 500 });
   }
-  return null;
 }
 
 export default function Login() {
-  const errors = useActionData();
+  const data = useActionData();
   const transition = useTransition();
+
   return (
     <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -51,9 +52,9 @@ export default function Login() {
                     required
                     className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-primary-dark focus:outline-none focus:ring-primary-dark sm:text-sm"
                   />
-                  {errors?.email ? (
-                    <p className="text-red-500 text-xs italic">
-                      {errors.email}
+                  {data?.errors?.email ? (
+                    <p className="mt-6 text-red-500 text-sm italic">
+                      {data?.errors.email}
                     </p>
                   ) : null}
                 </div>
@@ -69,8 +70,15 @@ export default function Login() {
                     ? "Loading..."
                     : "Continue with Email"}
                 </button>
-                {errors?.server ? (
-                  <p className="text-red-500 text-xs italic">{errors.server}</p>
+                {data?.errors?.server ? (
+                  <p className="mt-6 text-red-500 text-sm italic">
+                    {data?.errors.server}
+                  </p>
+                ) : null}
+                {data?.success ? (
+                  <p className="mt-6 text-sm italic">
+                    Please check your email for a login link.
+                  </p>
                 ) : null}
               </div>
             </Form>

@@ -52,8 +52,6 @@ export default function App() {
 
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  console.log(user);
-
   useEffect(() => {
     if (gaTrackingId?.length) {
       gtag.pageview(location.pathname, gaTrackingId);

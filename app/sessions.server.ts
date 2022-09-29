@@ -58,11 +58,17 @@ export async function getLoggedInUser(request: Request): Promise<User | null> {
   let accessToken = session.get("accessToken");
   if (!accessToken || typeof accessToken !== "string") return null;
   const { user } = await supabase.auth.api.getUser(accessToken);
-  return user;
+  const { data, error } = await supabase
+    .from("users")
+    .select()
+    .eq("email", user?.email)
+    .single();
+  return data;
 }
 
 /** Destroy the session cookie  */
 export async function clearCookie(request: Request) {
+  console.log("clearing cookie");
   let session = await storage.getSession(request.headers.get("Cookie"));
   return json("/", {
     headers: {
