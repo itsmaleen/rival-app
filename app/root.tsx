@@ -13,12 +13,10 @@ import {
 import { useEffect } from "react";
 import Navbar from "~/components/navbar";
 import styles from "./styles/app.css";
-
 import * as gtag from "./utils/gtag.client";
-
-type LoaderData = {
-  gaTrackingId: string | undefined;
-};
+import { createClient } from "@supabase/supabase-js";
+import { SupabaseProvider } from "./utils/supabase-client";
+import { getLoggedInUser } from "./sessions.server";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -35,16 +33,26 @@ export const loader: LoaderFunction = async ({ request }: LoaderArgs) => {
     request ? request.headers.get("user-agent") : navigator.userAgent
   ).match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i);
 
+  const user = await getLoggedInUser(request);
+
   //Returning the isMobileView as a prop to the component for further use.
   return json({
+    supabaseKey: process.env.SUPABASE_ANON_KEY,
+    supabaseUrl: process.env.SUPABASE_URL,
     isMobileView: Boolean(isMobileView),
     gaTrackingId: process.env.GA_TRACKING_ID,
+    user,
   });
 };
 
 export default function App() {
-  const { isMobileView, gaTrackingId } = useLoaderData();
+  const { isMobileView, gaTrackingId, supabaseKey, supabaseUrl, user } =
+    useLoaderData();
   const location = useLocation();
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  console.log(user);
 
   useEffect(() => {
     if (gaTrackingId?.length) {
@@ -81,8 +89,12 @@ export default function App() {
             />
           </>
         )}
-        <Navbar isMobileView={isMobileView} />
-        <Outlet />
+        <SupabaseProvider supabase={supabase}>
+          <>
+            <Navbar isMobileView={isMobileView} />
+            <Outlet />
+          </>
+        </SupabaseProvider>
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
