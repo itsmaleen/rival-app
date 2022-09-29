@@ -8,6 +8,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 type UserContextType = {
   user: User | null;
   session: Session | null;
+  supabase: SupabaseClient | null;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -62,9 +63,11 @@ export const UserContextProvider: React.FC<{
     if (session) fetchSessionCookie("SIGNED_IN", session);
   }, []);
 
-  const value: UserContextType = { user, session };
+  const value: UserContextType = { user, session, supabase };
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
+
+export const useUserContext = () => React.useContext(UserContext);
 
 /**
  * Gets user/session details stored in UserContext

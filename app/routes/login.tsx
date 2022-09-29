@@ -8,7 +8,6 @@ export async function action({ request }: ActionArgs) {
   try {
     const form = await request.formData();
     const email = form.get("email");
-    const password = form.get("password");
     // validate the fields
     if (typeof email !== "string" || !email.match(/^\S+@\S+$/)) {
       errors.email = "Email address is invalid";

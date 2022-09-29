@@ -18,6 +18,10 @@ export const setAuth = (token: string): Session => {
   return supabase.auth.setAuth(token);
 };
 
+export const signOut = async () => {
+  await supabase.auth.signOut();
+};
+
 // TODO: REMOVE THIS
 const getToken = async (request: Request) => {
   const cookieHeader = request.headers.get("Cookie");
