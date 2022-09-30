@@ -1,4 +1,4 @@
-import type { User } from "@supabase/supabase-js";
+import type { User } from "@prisma/client";
 import { createCookieSessionStorage, json } from "@remix-run/node";
 import { supabase } from "./superbase.server";
 

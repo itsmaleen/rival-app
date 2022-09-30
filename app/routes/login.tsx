@@ -1,7 +1,17 @@
-import type { ActionArgs } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useActionData, useTransition } from "@remix-run/react";
+import { getLoggedInUser } from "~/sessions.server";
 import { supabase } from "~/superbase.server";
+
+export async function loader({ request }: LoaderArgs) {
+  const user = await getLoggedInUser(request);
+  if (user) {
+    return redirect(`/${user.username}`);
+  }
+  return json({});
+}
 
 export async function action({ request }: ActionArgs) {
   const errors = { email: "", server: "" };
