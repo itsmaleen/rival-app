@@ -108,7 +108,7 @@ export default function Collection() {
   const [webFiltersOpen, setWebFiltersOpen] = useState(
     filters && filters.length > 0
   );
-  const [activeViewOption, setActiveViewOption] = useState<ViewOption>("GRID");
+  const [activeViewOption, setActiveViewOption] = useState<ViewOption>("TABLE");
 
   const filterFormRef = useRef<HTMLFormElement>(null);
 

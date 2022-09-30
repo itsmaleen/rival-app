@@ -1,6 +1,7 @@
 import type { CollectibleUser, User } from "@prisma/client";
 
 import { prisma } from "~/db.server";
+import { getCardFromPokemonTCGID } from "./ptcg.server";
 
 export type { CollectibleUser } from "@prisma/client";
 
@@ -18,6 +19,7 @@ export async function getAllCollectiblesWithTags(ownerId: User["id"]) {
       collectible: {
         include: {
           tags: true,
+          ThirdPartyCollectibleIdentifier: true,
         },
       },
       tags: true,
@@ -27,14 +29,18 @@ export async function getAllCollectiblesWithTags(ownerId: User["id"]) {
     },
   });
   // merge tags from collectible and collectible_user
-  const collectibles = collectiblesFromUser.map((collectible) => {
+  const collectibles = collectiblesFromUser.map(async (collectible) => {
     let tags = collectible.tags;
     if (collectible.collectible.tags) {
       tags = tags.concat(collectible.collectible.tags);
     }
+    // const card = await getCardFromPokemonTCGID(
+    //   collectible.collectible.ThirdPartyCollectibleIdentifier[0].thirdPartyId
+    // );
     return {
       ...collectible,
       tags,
+      // price: card.cardmarket.averageSellPrice,
     };
   });
   return collectibles;
