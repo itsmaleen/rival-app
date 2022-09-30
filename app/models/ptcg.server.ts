@@ -46,8 +46,7 @@ export async function getCardFromPokemonTCGID(id: string) {
   });
   const data = await response.json();
 
-  return data.data;
-  //   const card: PokemonCard = data.data;
+  const card: PokemonCard = data.data;
 
-  //   return card;
+  return card;
 }

@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Dialog, Disclosure, Transition } from "@headlessui/react";
 import {
   MagnifyingGlassIcon,
@@ -100,6 +100,15 @@ export async function loader({ params, request }: LoaderArgs) {
 
 type ViewOption = "GRID" | "CARD" | "TABLE";
 
+type CollectiblePrice = {
+  id: number;
+  price: number;
+};
+type CollectibleIds = {
+  id: number;
+  thirdPartyId: string;
+};
+
 export default function Collection() {
   const data = useLoaderData<typeof loader>();
 
@@ -120,6 +129,39 @@ export default function Collection() {
       : collectibles.filter((collectible) => {
           return collectible.name.toLowerCase().includes(query.toLowerCase());
         });
+
+  const [collectiblePrices, setCollectiblePrices] = useState<
+    CollectiblePrice[]
+  >([]);
+  const [collectiblePricesLoading, setCollectiblePricesLoading] =
+    useState(true);
+
+  const getCollectiblePrices = async () => {
+    const collectibleIds: CollectibleIds[] = filteredCollectibles.map(
+      (collectible) => {
+        return {
+          id: collectible.id,
+          thirdPartyId:
+            collectible.collectible.ThirdPartyCollectibleIdentifier[0]
+              .thirdPartyId,
+        };
+      }
+    );
+    const response = await fetch("/api/pokemon/prices", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(collectibleIds),
+    });
+    const data = await response.json();
+    setCollectiblePrices(data.collectiblePrices);
+    setCollectiblePricesLoading(false);
+  };
+
+  useEffect(() => {
+    getCollectiblePrices();
+  }, []);
 
   return (
     <div>
@@ -529,7 +571,13 @@ export default function Collection() {
                       {collectible.condition || "N/A"}
                     </td>
                     <td className="whitespace-nowrap px-3 py-4 text-sm ">
-                      $30.50
+                      {collectiblePricesLoading
+                        ? "..."
+                        : `$${
+                            collectiblePrices.find(
+                              (c) => c.id === collectible.id
+                            )?.price
+                          }` || "N/A"}
                     </td>
                   </tr>
                 ))}

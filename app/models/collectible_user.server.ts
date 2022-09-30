@@ -29,7 +29,7 @@ export async function getAllCollectiblesWithTags(ownerId: User["id"]) {
     },
   });
   // merge tags from collectible and collectible_user
-  const collectibles = collectiblesFromUser.map(async (collectible) => {
+  const collectibles = collectiblesFromUser.map((collectible) => {
     let tags = collectible.tags;
     if (collectible.collectible.tags) {
       tags = tags.concat(collectible.collectible.tags);
