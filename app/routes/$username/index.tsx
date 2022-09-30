@@ -520,6 +520,7 @@ export default function Collection() {
                     className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 md:pl-0"
                   >
                     <span className="sr-only">Image</span>
+                    <span className="sm:hidden">Image</span>
                   </th>
                   <th
                     scope="col"
@@ -560,7 +561,7 @@ export default function Collection() {
                     <td className="whitespace-nowrap py-4 text-sm">
                       <div className="flex items-center">
                         <div>
-                          <div className="text-gray-700">
+                          <div className="text-gray-700 text-xs sm:text-inherit">
                             {collectible.description?.split("\n")[0]}
                           </div>
                           <div className="font-medium">{collectible.name}</div>
