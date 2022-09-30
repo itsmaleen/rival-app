@@ -1,6 +1,10 @@
 import { Fragment, useRef, useState } from "react";
 import { Dialog, Disclosure, Transition } from "@headlessui/react";
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  MagnifyingGlassIcon,
+  XCircleIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import {
   ChevronUpIcon,
   ChevronDownIcon,
@@ -107,6 +111,15 @@ export default function Collection() {
   const [activeViewOption, setActiveViewOption] = useState<ViewOption>("GRID");
 
   const filterFormRef = useRef<HTMLFormElement>(null);
+
+  const [query, setQuery] = useState("");
+
+  const filteredCollectibles =
+    query === ""
+      ? collectibles
+      : collectibles.filter((collectible) => {
+          return collectible.name.toLowerCase().includes(query.toLowerCase());
+        });
 
   return (
     <div>
@@ -242,8 +255,17 @@ export default function Collection() {
             className="h-12 w-full border-0 bg-transparent pl-11 pr-4 text-gray-800 placeholder-gray-400 focus:ring-0 sm:text-sm"
             placeholder="Search..."
             type="search"
-            // onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => setQuery(event.target.value)}
           />
+          <button
+            className="pointer-events-auto absolute inset-y-0 right-0 flex items-center pr-3 group"
+            onClick={() => setQuery("")}
+          >
+            <XCircleIcon
+              className="h-5 w-5 text-gray-400 hover:bg-gray-100 rounded-full"
+              aria-hidden="true"
+            />
+          </button>
         </div>
         <span className="isolate inline-flex rounded col-span-3 sm:col-auto">
           <button
@@ -401,7 +423,7 @@ export default function Collection() {
                   : "grid-cols-2 gap-x-1 gap-y-4 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-4"
               }`}
             >
-              {collectibles.map((collectible) =>
+              {filteredCollectibles.map((collectible) =>
                 activeViewOption === "GRID" ? (
                   <div
                     key={collectible.id}
@@ -479,7 +501,7 @@ export default function Collection() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {collectibles.map((collectible) => (
+                {filteredCollectibles.map((collectible) => (
                   <tr key={collectible.id}>
                     <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                       <div className="flex items-center">
