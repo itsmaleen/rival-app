@@ -12,6 +12,7 @@ import { motion, useMotionValue, useTransform } from "framer-motion";
 export async function loader({ params, request }: LoaderArgs) {
   invariant(params.collectibleId, "collectible id is required");
 
+  // TODO: get this value using useMatches
   const isMobileView = (
     request ? request.headers.get("user-agent") : navigator.userAgent
   ).match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i);

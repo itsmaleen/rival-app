@@ -2,7 +2,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import type { Collectible, CollectibleSet } from "@prisma/client";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData, useOutletContext } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { Fragment, useState } from "react";
 import invariant from "tiny-invariant";
 import {
@@ -11,7 +11,6 @@ import {
   getSetsOwned,
 } from "~/models/set.server";
 import { getUserByUsername } from "~/models/user.server";
-import type { FilterContextType } from "~/routes/$username";
 import { classNames } from "~/utils/helpers";
 
 export async function loader({ params }: LoaderArgs) {
@@ -45,8 +44,6 @@ export async function loader({ params }: LoaderArgs) {
 
 export default function SetsPage() {
   const data = useLoaderData<typeof loader>();
-  const { setHideFilter } = useOutletContext<FilterContextType>();
-  setHideFilter(true);
   const [activeSet, setActiveSet] = useState("");
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("Collected");
