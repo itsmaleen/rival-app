@@ -85,14 +85,12 @@ export default function Navbar(props: { isMobileView: boolean }) {
               </div>
             ) : (
               <div className="flex space-x-2 sm:space-x-4">
-                <a
-                  href={`https://s80o7xdqcu7.typeform.com/to/lUEhS3bd?utm_source=app.withrival.com&utm_medium=${
-                    isMobileView ? "mobile" : "web"
-                  }`}
+                <Link
+                  to="/login"
                   className="font-medium inline-flex items-center px-3 py-2 sm:px-9 sm:py-3.5 border-2 text-xs sm:text-sm rounded-full border-black text-black bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
                 >
                   Log In
-                </a>
+                </Link>
                 <a
                   href={`https://s80o7xdqcu7.typeform.com/to/lUEhS3bd?utm_source=app.withrival.com&utm_medium=${
                     isMobileView ? "mobile" : "web"
