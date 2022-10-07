@@ -68,11 +68,11 @@ export default function App() {
 
   useEffect(() => {
     hotjar.initialize(hotjarId, 6);
-  }, [hotjarId]);
 
-  if (hotjar.initialized() && user) {
-    hotjar.identify("USER_EMAIL", { userProperty: user.email });
-  }
+    if (hotjar.initialized() && user) {
+      hotjar.identify("USER_EMAIL", { userProperty: user.email });
+    }
+  }, [hotjarId, user]);
 
   return (
     <html lang="en">
