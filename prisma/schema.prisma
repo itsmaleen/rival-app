@@ -11,16 +11,17 @@ datasource db {
 }
 
 model User {
-  id           Int               @id @default(autoincrement())
-  email        String            @unique
-  name         String?
-  username     String            @unique
-  description  String?
-  collectibles CollectibleUser[]
-  createdAt    DateTime          @default(now())
-  links        UserLink[]
-  imageUrl     String?
-  SetUser      SetUser[]
+  id               Int                @id @default(autoincrement())
+  email            String             @unique
+  name             String?
+  username         String             @unique
+  description      String?
+  collectibles     CollectibleUser[]
+  createdAt        DateTime           @default(now())
+  links            UserLink[]
+  imageUrl         String?
+  SetUser          SetUser[]
+  EbayRefreshToken EbayRefreshToken[]
 
   @@map("users")
 }
@@ -163,4 +164,16 @@ model SetUser {
   userId Int
 
   @@map("set_user")
+}
+
+model EbayRefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  expiresAt DateTime
+  userId    Int
+  User      User     @relation(fields: [userId], references: [id])
+
+  @@map("ebay_refresh_tokens")
 }

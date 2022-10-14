@@ -1,5 +1,5 @@
 import type { User } from "@prisma/client";
-import { createCookieSessionStorage, json } from "@remix-run/node";
+import { createCookieSessionStorage, json, redirect } from "@remix-run/node";
 import { supabase } from "./superbase.server";
 
 let sessionSecret = process.env.SESSION_SECRET;
@@ -43,7 +43,7 @@ export async function createUserSession(accessToken: string) {
 /**
  * Gets a session cookie from the passed in request
  */
-export function getUserSession(request: Request) {
+export function getSession(request: Request) {
   return storage.getSession(request.headers.get("Cookie"));
 }
 
@@ -53,7 +53,7 @@ export function getUserSession(request: Request) {
  * @returns User for which accessToken is provided
  */
 export async function getLoggedInUser(request: Request): Promise<User | null> {
-  let session = await getUserSession(request);
+  let session = await getSession(request);
 
   let accessToken = session.get("accessToken");
   if (!accessToken || typeof accessToken !== "string") return null;
@@ -73,6 +73,28 @@ export async function clearCookie(request: Request) {
   return json("/", {
     headers: {
       "Set-Cookie": await storage.destroySession(session),
+    },
+  });
+}
+
+export async function createEbaySession({
+  request,
+  accessToken,
+  redirectTo,
+  expiresIn,
+}: {
+  request: Request;
+  accessToken: string;
+  redirectTo: string;
+  expiresIn: number;
+}) {
+  const session = await getSession(request);
+  session.set("ebayAccessToken", accessToken);
+  return redirect(redirectTo, {
+    headers: {
+      "Set-Cookie": await storage.commitSession(session, {
+        maxAge: expiresIn, // Should be 2 hours
+      }),
     },
   });
 }
