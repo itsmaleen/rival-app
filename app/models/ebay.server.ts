@@ -29,3 +29,28 @@ export async function saveRefreshToken(
     },
   });
 }
+
+// Get api key for env
+const APP_ID = process.env.EBAY_CLIENT_ID;
+// X-Api-Key header for fetch requests
+const headers = new Headers();
+headers.append("X-EBAY-SOA-RESPONSE-DATA-FORMAT", "JSON");
+if (APP_ID) {
+  headers.append("X-EBAY-SOA-SECURITY-APPNAME", APP_ID);
+}
+
+export async function findItemsByKeywords(keywords: string) {
+  const url = new URL(
+    "https://svcs.ebay.com/services/search/FindingService/v1"
+  );
+  url.searchParams.set("OPERATION-NAME", "findItemsByKeywords");
+  url.searchParams.set("keywords", keywords);
+  url.searchParams.set("outputSelector", "PictureURLSuperSize");
+
+  const response = await fetch(url.toString(), {
+    headers,
+  });
+  const data = await response.json();
+
+  return data;
+}

@@ -29,7 +29,7 @@ export async function action({ request }: ActionArgs) {
     }
     console.log(user);
     return json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.log("error", error);
     errors.server = error?.message || error;
     return json(errors, { status: 500 });
