@@ -1,23 +1,7 @@
-import { useRef, useState } from "react";
-import { Disclosure } from "@headlessui/react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
-import {
-  FunnelIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
-  DeviceTabletIcon,
-  Squares2X2Icon,
-} from "@heroicons/react/20/solid";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Form,
-  NavLink,
-  Outlet,
-  useLoaderData,
-  useLocation,
-} from "@remix-run/react";
+import { NavLink, Outlet, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import Profile from "~/components/profile";
 import { getCollectibleCounts } from "~/models/collectible_user.server";

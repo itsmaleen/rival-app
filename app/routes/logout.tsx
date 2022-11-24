@@ -1,30 +1,25 @@
-import type { LoaderArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
-import { useNavigate, useSubmit } from "@remix-run/react";
-import { useEffect } from "react";
-import { clearCookie } from "~/sessions.server";
-import { useSupabaseContext } from "~/utils/supabase-client";
+import type { LoaderFunction } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import { createServerClient } from "@supabase/auth-helpers-remix";
 
-export async function loader({ request }: LoaderArgs) {
-  return clearCookie(request);
-}
+export const loader: LoaderFunction = async ({
+  request,
+}: {
+  request: Request;
+}) => {
+  const response = new Response();
 
-export async function action({}) {
-  return redirect("/");
-}
+  const supabaseClient = createServerClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY!,
+    { request, response }
+  );
 
-export default function Logout() {
-  const submit = useSubmit();
-  const { supabase } = useSupabaseContext();
+  const { error } = await supabaseClient.auth.signOut();
 
-  useEffect(() => {
-    const logoutUser = async () => {
-      await supabase.auth.signOut();
-      submit(null, { method: "post" });
-    };
-
-    logoutUser();
-  }, []);
-
-  return null;
-}
+  // in order for the set-cookie header to be set,
+  // headers must be returned as part of the loader response
+  return redirect("/", {
+    headers: response.headers,
+  });
+};

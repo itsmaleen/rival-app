@@ -4,12 +4,18 @@ import { Menu, Transition } from "@headlessui/react";
 import Logo from "./logo";
 import { useMatches } from "@remix-run/react";
 import { PlusIcon } from "@heroicons/react/24/outline";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export default function Navbar(props: { isMobileView: boolean }) {
   const { isMobileView } = props;
 
-  const rootData = useMatches()[0].data as { user: any };
-  const user = rootData.user;
+  const rootData = useMatches()[0].data as {
+    loggedInUserData: any;
+    supabase: SupabaseClient;
+  };
+  const user = rootData.loggedInUserData;
+  const supabase = rootData.supabase;
+
   return (
     <header className="bg-white border-b-2 border-gray-100">
       <div className="max-w-7xl mx-auto px-2 sm:px-4">
