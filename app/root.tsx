@@ -10,14 +10,16 @@ import {
   useLoaderData,
   useLocation,
 } from "@remix-run/react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "~/components/navbar";
 import styles from "./styles/app.css";
 import * as gtag from "./utils/gtag.client";
-import { createClient } from "@supabase/supabase-js";
-import { SupabaseProvider } from "./utils/supabase-client";
-import { getLoggedInUser } from "./sessions.server";
 import { hotjar } from "react-hotjar";
+import {
+  createBrowserClient,
+  createServerClient,
+} from "@supabase/auth-helpers-remix";
+import type { Session, SupabaseClient } from "@supabase/auth-helpers-remix";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -29,36 +31,87 @@ export function links() {
   return [{ rel: "stylesheet", href: styles }];
 }
 
+export type ContextType = {
+  supabase: SupabaseClient | null;
+  session: Session | null;
+};
+
 export const loader: LoaderFunction = async ({ request }: LoaderArgs) => {
+  const { SUPABASE_URL, SUPABASE_ANON_KEY } = process.env;
+
   const isMobileView = (
     request ? request.headers.get("user-agent") : navigator.userAgent
   ).match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i);
 
-  const user = await getLoggedInUser(request);
+  const response = new Response();
+
+  const supabaseClient = createServerClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY!,
+    { request, response }
+  );
+  const {
+    data: { session: initialSession },
+  } = await supabaseClient.auth.getSession();
+  const user = initialSession?.user;
+
+  const { data: loggedInUserData, error } = await supabaseClient
+    .from("users")
+    .select()
+    .eq("email", user?.email)
+    .single();
 
   //Returning the isMobileView as a prop to the component for further use.
   return json({
-    supabaseKey: process.env.SUPABASE_ANON_KEY,
-    supabaseUrl: process.env.SUPABASE_URL,
+    initialSession,
+    env: {
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY,
+    },
     isMobileView: Boolean(isMobileView),
     gaTrackingId: process.env.GA_TRACKING_ID,
     user,
+    loggedInUserData: error ? null : loggedInUserData,
     hotjarId: process.env.HOTJAR_SITE_ID,
   });
 };
 
 export default function App() {
   const {
+    env,
     isMobileView,
     gaTrackingId,
-    supabaseKey,
-    supabaseUrl,
     user,
     hotjarId,
+    initialSession,
+    loggedInUserData,
   } = useLoaderData();
+  const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+  const [session, setSession] = useState<Session | null>(initialSession);
   const location = useLocation();
 
-  const supabase = createClient(supabaseUrl, supabaseKey);
+  console.log(user);
+  console.log(loggedInUserData);
+
+  const context: ContextType = { supabase, session };
+
+  useEffect(() => {
+    if (!supabase) {
+      const supabaseClient = createBrowserClient(
+        env.SUPABASE_URL,
+        env.SUPABASE_ANON_KEY
+      );
+      setSupabase(supabaseClient);
+      const {
+        data: { subscription },
+      } = supabaseClient.auth.onAuthStateChange((_, session) =>
+        setSession(session)
+      );
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, []);
 
   useEffect(() => {
     if (gaTrackingId?.length) {
@@ -103,13 +156,15 @@ export default function App() {
             />
           </>
         )}
-        <SupabaseProvider supabase={supabase}>
-          <>
-            <Navbar isMobileView={isMobileView} />
-            <Outlet />
-          </>
-        </SupabaseProvider>
+
+        <Navbar isMobileView={isMobileView} />
+        <Outlet context={context} />
         <ScrollRestoration />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.env = ${JSON.stringify(env)}`,
+          }}
+        />
         <Scripts />
         <LiveReload />
       </body>
